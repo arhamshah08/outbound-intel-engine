@@ -6,9 +6,7 @@ function getGoogle() {
   return createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY! })
 }
 
-// Also supports OpenAI if key is set
 async function generate(prompt: string): Promise<string> {
-  // Primary: Google Gemini
   try {
     const google = getGoogle()
     const { text } = await generateText({
@@ -18,7 +16,6 @@ async function generate(prompt: string): Promise<string> {
     })
     return text
   } catch (e) {
-    // Fallback: OpenAI
     const openaiKey = process.env.OPENAI_API_KEY
     if (openaiKey) {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -40,12 +37,10 @@ async function generate(prompt: string): Promise<string> {
 export async function scoreCompany(
   companyData: Partial<CompanyResult>,
   product: string,
-  targetTitle: string,
 ): Promise<OutcomeScore> {
-  const prompt = `You are a B2B sales intelligence engine. Score this company as a prospect.
+  const prompt = `You are a B2B sales intelligence engine scoring healthcare companies as prospects.
 
-PRODUCT BEING SOLD: ${product || 'B2B SaaS tool'}
-TARGET TITLE: ${targetTitle || 'VP of Sales / Head of GTM'}
+PRODUCT BEING SOLD: ${product || 'Healthcare workflow automation platform'}
 
 COMPANY DATA:
 Name: ${companyData.name}
@@ -59,15 +54,27 @@ Contacts found: ${companyData.contacts?.map(c => `${c.name} (${c.title})`).join(
 Pain points: ${companyData.inputData?.filter(d => d.type === 'Pain Point').map(d => d.value).join(' | ')}
 Buying signals: ${companyData.inputData?.filter(d => d.type === 'Buying Signal').map(d => d.value).join(' | ')}
 
-Score each dimension 1-10. Return ONLY valid JSON:
+HARD DISQUALIFICATION RULE (apply FIRST):
+If the company is a hospital system, academic medical center, integrated delivery network, or government health system — set "disqualified": true and set ALL dimension scores to 0. These entities have 12-18 month procurement cycles, committee buying structures, and rigid IT governance that makes them a poor ICP fit. Examples that must be DQ'd: Kaiser Permanente, Mayo Clinic, HCA Healthcare, NYU Langone, Baylor Scott & White Health, Sutter Health, CommonSpirit, Ascension, UPMC, any entity with "Health System" or "Hospital" as primary identifier.
+
+SCORING MATRIX (total out of 100):
+1. ICP Fit /30 — Is this an independent physician group, PE-backed MSO, or specialty network? Score high (25-30) for multi-specialty PE-backed MSOs. Score medium (15-20) for large independent specialty groups. Score 0 if hospital/health system (DQ).
+2. Workflow Pain /20 — Does their specialty generate high fax, referral, scheduling, or prior auth volume? ENT, oncology, cardiology, ortho = high pain (15-20). Primary care = medium (10-14).
+3. Scale / Complexity /15 — Multi-site? 50+ providers? Enough complexity to justify a platform solution. Single-site small groups score low (3-7).
+4. Buying Committee /15 — Is there a named, reachable decision-maker (COO, VP Ops, CMO, CEO)? Recent leadership hires signal readiness. Score high if specific exec is identifiable.
+5. Growth Pressure /10 — Actively acquiring practices? Under PE hold-period pressure to prove operational ROI? Score high if acquisition activity or PE backing is confirmed.
+6. Messaging /10 — Does the product story land cleanly for this specific account type and specialty? High if clear pain-to-product match.
+
+Return ONLY valid JSON (no markdown, no code block):
 {
+  "disqualified": false,
   "dimensions": [
-    { "name": "ICP Fit — Industry", "weight": 0.20, "score": 8, "evidence": "...", "confidence": "High", "researchUrl": "" },
-    { "name": "Buying Signal Strength", "weight": 0.25, "score": 9, "evidence": "...", "confidence": "High", "researchUrl": "" },
-    { "name": "Budget Signal", "weight": 0.15, "score": 7, "evidence": "...", "confidence": "Medium", "researchUrl": "crunchbase.com/..." },
-    { "name": "Pain-to-Product Match", "weight": 0.20, "score": 8, "evidence": "...", "confidence": "High", "researchUrl": "" },
-    { "name": "Contact Quality", "weight": 0.10, "score": 6, "evidence": "...", "confidence": "Low", "researchUrl": "apollo.io/..." },
-    { "name": "Growth Signal", "weight": 0.10, "score": 8, "evidence": "...", "confidence": "High", "researchUrl": "" }
+    { "name": "ICP Fit", "maxScore": 30, "score": 25, "evidence": "specific evidence here", "confidence": "High", "researchUrl": "" },
+    { "name": "Workflow Pain", "maxScore": 20, "score": 16, "evidence": "specific evidence here", "confidence": "High", "researchUrl": "" },
+    { "name": "Scale / Complexity", "maxScore": 15, "score": 12, "evidence": "specific evidence here", "confidence": "Medium", "researchUrl": "" },
+    { "name": "Buying Committee", "maxScore": 15, "score": 10, "evidence": "specific evidence here", "confidence": "Medium", "researchUrl": "" },
+    { "name": "Growth Pressure", "maxScore": 10, "score": 8, "evidence": "specific evidence here", "confidence": "High", "researchUrl": "" },
+    { "name": "Messaging", "maxScore": 10, "score": 7, "evidence": "specific evidence here", "confidence": "High", "researchUrl": "" }
   ]
 }`
 
@@ -75,36 +82,32 @@ Score each dimension 1-10. Return ONLY valid JSON:
   const json = JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0] ?? '{}')
 
   const dimensions = json.dimensions ?? []
-  const total = dimensions.reduce((sum: number, d: { weight: number; score: number }) => sum + d.weight * d.score, 0)
-  const weighted = dimensions.map((d: { weight: number; score: number; name: string; evidence: string; confidence: string; researchUrl: string }) => ({
-    ...d,
-    weighted: parseFloat((d.weight * d.score).toFixed(2)),
-  }))
+  const total = dimensions.reduce((sum: number, d: { score: number }) => sum + d.score, 0)
+  const disqualified = json.disqualified === true
 
   return {
-    dimensions: weighted,
-    total: parseFloat(total.toFixed(2)),
-    status: total >= 8 ? 'CALL NOW' : total >= 6 ? 'SEQUENCE' : 'DEPRIORITIZE',
+    dimensions,
+    total: Math.round(total),
+    status: disqualified ? 'DISQUALIFIED' : total >= 80 ? 'CALL NOW' : total >= 60 ? 'SEQUENCE' : 'DEPRIORITIZE',
   }
 }
 
 export async function generateBrief(
   company: Partial<CompanyResult>,
   product: string,
-  targetTitle: string,
 ): Promise<CallBrief> {
   const contact = company.contacts?.[0]
   const painPoints = company.inputData?.filter(d => d.type === 'Pain Point') ?? []
   const signals = company.inputData?.filter(d => d.type === 'Buying Signal') ?? []
 
-  const prompt = `You are a world-class B2B sales coach. Write a pre-call brief.
+  const prompt = `You are a world-class B2B sales coach. Write a pre-call brief for a healthcare sales rep.
 
-PRODUCT: ${product || 'B2B SaaS tool'}
+PRODUCT: ${product || 'Healthcare workflow automation platform'}
 COMPANY: ${company.name} (${company.domain})
-BEST CONTACT: ${contact?.name ?? 'Unknown'}, ${contact?.title ?? targetTitle}
+BEST CONTACT: ${contact?.name ?? 'Unknown'}, ${contact?.title ?? 'Decision Maker'}
 PAIN POINTS: ${painPoints.map(p => p.value).join(' | ')}
 BUYING SIGNALS: ${signals.map(s => s.value).join(' | ')}
-SCORE: ${company.score?.total}/10 — ${company.score?.status}
+SCORE: ${company.score?.total}/100 — ${company.score?.status}
 
 Return ONLY valid JSON:
 {

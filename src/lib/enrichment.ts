@@ -37,7 +37,7 @@ type OnProgress = (msg: string) => void
 
 export async function enrichCompany(
   input: string,
-  opts: { product: string; targetTitle: string },
+  opts: { product: string; domain?: string },
   onProgress: OnProgress,
 ): Promise<CompanyResult> {
   const id = Math.random().toString(36).slice(2)
@@ -65,7 +65,7 @@ export async function enrichCompany(
       PAIN_SCHEMA,
     ).catch(() => ({ structured: {}, results: [] })),
 
-    exaSearch(`${opts.targetTitle} at ${input} site:linkedin.com OR ${input} leadership team`, 3)
+    exaSearch(`${input} leadership team executives COO CMO VP Operations site:linkedin.com`, 3)
       .catch(() => []),
   ])
 
@@ -73,7 +73,7 @@ export async function enrichCompany(
   const pn = painResults.structured as Record<string, string>
 
   const name = co.name || input
-  const domain = co.domain || `${input.toLowerCase().replace(/\s+/g, '')}.com`
+  const domain = co.domain || opts.domain || `${input.toLowerCase().replace(/\s+/g, '')}.com`
   const industry = co.industry || 'Unknown'
 
   // Add company data points
@@ -95,10 +95,11 @@ export async function enrichCompany(
   for (const r of contactResults.slice(0, 3)) {
     if (r.highlights?.[0]) {
       const nameMatch = r.title?.split(' - ')?.[0] ?? ''
-      const titleMatch = r.title?.split(' - ')?.[1] ?? opts.targetTitle
+      const titleMatch = r.title?.split(' - ')?.[1]
       if (nameMatch) {
-        contacts.push({ name: nameMatch, title: titleMatch, linkedin: r.url })
-        addPoint('Exa (auto)', 'Contact', `${nameMatch} — ${titleMatch}`, 'High', r.url)
+        const title = titleMatch || 'Executive'
+        contacts.push({ name: nameMatch, title, linkedin: r.url })
+        addPoint('Exa (auto)', 'Contact', `${nameMatch} — ${title}`, 'High', r.url)
       }
     }
   }
@@ -111,7 +112,7 @@ export async function enrichCompany(
     onProgress('Iteration 2 — Filling gaps...')
 
     // Try Apollo for email (primary contact source)
-    const apolloContacts = await apolloSearch(domain, opts.targetTitle).catch(() => [])
+    const apolloContacts = await apolloSearch(domain, 'Chief Operating Officer').catch(() => [])
     if (apolloContacts.length) {
       for (const c of apolloContacts.slice(0, 2)) {
         const existing = contacts.find(x => x.name === c.name)
@@ -171,7 +172,7 @@ export async function enrichCompany(
     contacts,
   }
 
-  const score = await scoreCompany(partial, opts.product, opts.targetTitle)
+  const score = await scoreCompany(partial, opts.product)
 
   return {
     id,
@@ -184,7 +185,7 @@ export async function enrichCompany(
     revenue: co.revenue || 'Unknown',
     description: co.description || '',
     status: 'done',
-    statusMessage: `${score.status} — ${score.total}/10`,
+    statusMessage: `${score.status} — ${score.total}/100`,
     iteration: 3,
     inputData,
     contacts,

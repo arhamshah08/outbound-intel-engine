@@ -4,7 +4,7 @@ import { generateBrief } from '@/lib/ai'
 export const maxDuration = 300
 
 export async function POST(req: Request) {
-  const { companies, product, targetTitle, campaignName } = await req.json()
+  const { companies, product, campaignName } = await req.json()
 
   const encoder = new TextEncoder()
 
@@ -19,30 +19,30 @@ export async function POST(req: Request) {
       send({ type: 'start', total: companies.length, campaignName })
 
       // Process up to 2 companies in parallel
-      const chunks: string[][] = []
+      const chunks: { name: string; website: string }[][] = []
       for (let i = 0; i < companies.length; i += 2) {
         chunks.push(companies.slice(i, i + 2))
       }
 
       for (const chunk of chunks) {
         await Promise.all(
-          chunk.map(async (company: string) => {
-            const name = company.trim()
-            if (!name) return
+          chunk.map(async (company: { name: string; website: string }) => {
+            const key = company.name.trim()
+            if (!key) return
 
-            send({ type: 'progress', company: name, message: 'Starting enrichment...' })
+            send({ type: 'progress', company: key, message: 'Starting enrichment...' })
 
             try {
               const result = await enrichCompany(
-                name,
-                { product, targetTitle },
-                (message: string) => send({ type: 'progress', company: name, message }),
+                key,
+                { product, domain: company.website },
+                (message: string) => send({ type: 'progress', company: key, message }),
               )
-              send({ type: 'result', company: name, data: result })
+              send({ type: 'result', company: key, data: result })
             } catch (err) {
               send({
                 type: 'error',
-                company: name,
+                company: key,
                 message: err instanceof Error ? err.message : 'Enrichment failed',
               })
             }
@@ -65,9 +65,9 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  const { company, product, targetTitle } = await req.json()
+  const { company, product } = await req.json()
   try {
-    const brief = await generateBrief(company, product, targetTitle)
+    const brief = await generateBrief(company, product)
     return Response.json({ brief })
   } catch (err) {
     return Response.json({ error: String(err) }, { status: 500 })

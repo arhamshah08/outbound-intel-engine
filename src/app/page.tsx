@@ -1,18 +1,28 @@
 'use client'
 import { useState, useRef } from 'react'
-import { Zap, ChevronDown, ChevronUp, ExternalLink, AlertCircle, CheckCircle, Clock, Phone, Mail, Loader2 } from 'lucide-react'
+import { Zap, ChevronDown, ChevronUp, ExternalLink, AlertCircle, Phone, Mail, Loader2, Plus, X, ClipboardPaste } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CompanyResult } from '@/lib/types'
 
-function ScoreBar({ score }: { score: number }) {
-  const pct = (score / 10) * 100
-  const color = score >= 8 ? 'bg-success' : score >= 6 ? 'bg-warning' : 'bg-outline'
+const DEFAULT_ROWS = [
+  { name: 'Elevate ENT Partners', website: 'elevateent.com' },
+  { name: 'The US Oncology Network', website: 'usoncology.com' },
+  { name: 'Growth Orthopedics', website: 'growthorthopedics.com' },
+  { name: 'Baylor Scott & White Health', website: 'bswhealth.com' },
+  { name: 'Sutter Health', website: 'sutterhealth.org' },
+]
+
+type CompanyRow = { name: string; website: string }
+
+function ScoreBar({ score, max = 100 }: { score: number; max?: number }) {
+  const pct = (score / max) * 100
+  const color = pct >= 80 ? 'bg-success' : pct >= 60 ? 'bg-warning' : 'bg-outline'
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-outline-variant rounded-full overflow-hidden">
         <div className={cn('h-full rounded-full transition-all duration-700', color)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-sm font-bold w-8 text-right">{score.toFixed(1)}</span>
+      <span className="text-sm font-bold w-14 text-right">{score}/{max}</span>
     </div>
   )
 }
@@ -22,6 +32,7 @@ function StatusBadge({ status }: { status: CompanyResult['score']['status'] }) {
     <span className={cn('px-2 py-0.5 rounded-full text-xs font-bold',
       status === 'CALL NOW' ? 'bg-green-100 text-green-700' :
       status === 'SEQUENCE' ? 'bg-amber-100 text-amber-700' :
+      status === 'DISQUALIFIED' ? 'bg-red-100 text-red-600' :
       'bg-gray-100 text-gray-500'
     )}>
       {status}
@@ -94,7 +105,7 @@ function InputTable({ data }: { data: CompanyResult['inputData'] }) {
   )
 }
 
-function CallBriefPanel({ company, product, targetTitle }: { company: CompanyResult; product: string; targetTitle: string }) {
+function CallBriefPanel({ company, product }: { company: CompanyResult; product: string }) {
   const [brief, setBrief] = useState(company.callBrief)
   const [loading, setLoading] = useState(false)
   const [showInputTable, setShowInputTable] = useState(false)
@@ -104,7 +115,7 @@ function CallBriefPanel({ company, product, targetTitle }: { company: CompanyRes
     const res = await fetch('/api/enrich', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ company, product, targetTitle }),
+      body: JSON.stringify({ company, product }),
     })
     const { brief: b } = await res.json()
     setBrief(b)
@@ -113,28 +124,38 @@ function CallBriefPanel({ company, product, targetTitle }: { company: CompanyRes
   }
 
   const contact = company.contacts[0]
+  const isDisqualified = company.score.status === 'DISQUALIFIED'
 
   return (
     <div className="animate-slide-in bg-white border border-outline-variant rounded-2xl shadow-card overflow-hidden">
-      {/* Header */}
       <div className="bg-on-surface px-6 py-4 flex items-start justify-between">
         <div>
-          <h2 className="text-white font-bold text-lg">{company.name} — Call Brief</h2>
+          <h2 className="text-white font-bold text-lg">{company.name} — {isDisqualified ? 'Disqualification Summary' : 'Call Brief'}</h2>
           <p className="text-white/60 text-sm mt-0.5">
             {company.domain} · {company.industry} · {company.headcount} employees
           </p>
         </div>
         <div className="text-right">
-          <div className={cn('text-2xl font-black', company.score.total >= 8 ? 'text-green-400' : company.score.total >= 6 ? 'text-amber-400' : 'text-gray-400')}>
-            {company.score.total}/10
+          <div className={cn('text-2xl font-black',
+            company.score.total >= 80 ? 'text-green-400' :
+            company.score.total >= 60 ? 'text-amber-400' :
+            isDisqualified ? 'text-red-400' : 'text-gray-400'
+          )}>
+            {isDisqualified ? 'DQ' : `${company.score.total}/100`}
           </div>
           <StatusBadge status={company.score.status} />
         </div>
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Contact */}
-        {contact && (
+        {isDisqualified && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-xs font-bold uppercase tracking-wide text-red-700 mb-1">Disqualified — Hospital / Health System</p>
+            <p className="text-sm text-red-800">{company.score.dimensions[0]?.evidence ?? 'This account type has 12-18 month procurement cycles and committee buying structures that fall outside our ICP.'}</p>
+          </div>
+        )}
+
+        {contact && !isDisqualified && (
           <div className="flex items-center gap-4 p-4 bg-surface-low rounded-xl">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
               {contact.name[0]}
@@ -166,9 +187,9 @@ function CallBriefPanel({ company, product, targetTitle }: { company: CompanyRes
               <div key={d.name}>
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-on-surface-variant">{d.name}</span>
-                  <span className="font-medium">{Math.round(d.weight * 100)}% weight · {d.confidence} confidence</span>
+                  <span className="font-medium">max {d.maxScore} pts · {d.confidence}</span>
                 </div>
-                <ScoreBar score={d.score} />
+                <ScoreBar score={d.score} max={d.maxScore} />
                 <p className="text-xs text-on-surface-variant mt-0.5">{d.evidence}</p>
                 {d.researchUrl && (
                   <a href={d.researchUrl.startsWith('http') ? d.researchUrl : `https://${d.researchUrl}`}
@@ -182,95 +203,94 @@ function CallBriefPanel({ company, product, targetTitle }: { company: CompanyRes
         </div>
 
         {/* Pain Points */}
-        <div>
-          <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-on-surface-variant">Sourced Pain Points</h3>
-          <div className="space-y-2">
-            {company.inputData.filter(d => d.type === 'Pain Point').map((p, i) => (
-              <div key={i} className="flex gap-3 p-3 bg-red-50 rounded-lg">
-                <span className="text-red-500 font-bold text-sm">{i + 1}</span>
-                <div className="flex-1">
-                  <p className="text-sm">{p.value}</p>
-                  {p.url && (
-                    <a href={p.url.startsWith('http') ? p.url : `https://${p.url}`} target="_blank" rel="noreferrer"
-                      className="text-xs text-primary hover:underline inline-flex items-center gap-0.5 mt-1">
-                      Source <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  )}
+        {!isDisqualified && (
+          <div>
+            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-on-surface-variant">Sourced Pain Points</h3>
+            <div className="space-y-2">
+              {company.inputData.filter(d => d.type === 'Pain Point').map((p, i) => (
+                <div key={i} className="flex gap-3 p-3 bg-red-50 rounded-lg">
+                  <span className="text-red-500 font-bold text-sm">{i + 1}</span>
+                  <div className="flex-1">
+                    <p className="text-sm">{p.value}</p>
+                    {p.url && (
+                      <a href={p.url.startsWith('http') ? p.url : `https://${p.url}`} target="_blank" rel="noreferrer"
+                        className="text-xs text-primary hover:underline inline-flex items-center gap-0.5 mt-1">
+                        Source <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Brief */}
-        {!brief ? (
-          <button onClick={loadBrief} disabled={loading}
-            className="w-full py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors disabled:opacity-60">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating Call Brief...</> : <><Phone className="w-4 h-4" /> Generate Full Call Brief</>}
-          </button>
-        ) : (
-          <div className="space-y-4">
-            {/* Open With */}
-            <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-              <p className="text-xs font-bold uppercase tracking-wide text-green-700 mb-1">Open With</p>
-              <p className="text-sm font-medium">"{brief.openWith}"</p>
-            </div>
+        {!isDisqualified && (
+          !brief ? (
+            <button onClick={loadBrief} disabled={loading}
+              className="w-full py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors disabled:opacity-60">
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating Call Brief...</> : <><Phone className="w-4 h-4" /> Generate Full Call Brief</>}
+            </button>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                <p className="text-xs font-bold uppercase tracking-wide text-green-700 mb-1">Open With</p>
+                <p className="text-sm font-medium">&ldquo;{brief.openWith}&rdquo;</p>
+              </div>
 
-            {/* First Line */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <p className="text-xs font-bold uppercase tracking-wide text-blue-700 mb-1">Email First Line</p>
-              <p className="text-sm font-medium">"{brief.personalizedFirstLine}"</p>
-              <p className="text-xs text-blue-600 mt-1">Subject: {brief.emailSubjectLine}</p>
-            </div>
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-xs font-bold uppercase tracking-wide text-blue-700 mb-1">Email First Line</p>
+                <p className="text-sm font-medium">&ldquo;{brief.personalizedFirstLine}&rdquo;</p>
+                <p className="text-xs text-blue-600 mt-1">Subject: {brief.emailSubjectLine}</p>
+              </div>
 
-            {/* Reference On Call */}
-            {brief.referenceOnCall?.length > 0 && (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2">Reference On The Call</p>
-                <div className="space-y-1.5">
-                  {brief.referenceOnCall.map((r, i) => (
-                    <div key={i} className="flex items-start gap-2 text-sm">
-                      <span className="text-primary font-bold">→</span>
-                      <span className="flex-1">{r.point}</span>
-                      {r.url && (
-                        <a href={r.url.startsWith('http') ? r.url : `https://${r.url}`} target="_blank" rel="noreferrer" className="text-primary shrink-0">
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
+              {brief.referenceOnCall?.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2">Reference On The Call</p>
+                  <div className="space-y-1.5">
+                    {brief.referenceOnCall.map((r, i) => (
+                      <div key={i} className="flex items-start gap-2 text-sm">
+                        <span className="text-primary font-bold">→</span>
+                        <span className="flex-1">{r.point}</span>
+                        {r.url && (
+                          <a href={r.url.startsWith('http') ? r.url : `https://${r.url}`} target="_blank" rel="noreferrer" className="text-primary shrink-0">
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {brief.stillMissing?.length > 0 && (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <p className="text-xs font-bold uppercase tracking-wide text-amber-700 mb-2">Research Before Calling</p>
+                  {brief.stillMissing.map((m, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm text-amber-800">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{m.item} → <span className="font-medium">{m.where}</span></span>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Still Missing */}
-            {brief.stillMissing?.length > 0 && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <p className="text-xs font-bold uppercase tracking-wide text-amber-700 mb-2">Research Before Calling</p>
-                {brief.stillMissing.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm text-amber-800">
-                    <AlertCircle className="w-3 h-3 shrink-0" />
-                    <span>{m.item} → <span className="font-medium">{m.where}</span></span>
+              {brief.researchLinks?.filter(Boolean).length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2">Research Links</p>
+                  <div className="flex flex-wrap gap-2">
+                    {brief.researchLinks.filter(Boolean).map((link, i) => (
+                      <a key={i} href={link.startsWith('http') ? link : `https://${link}`} target="_blank" rel="noreferrer"
+                        className="px-3 py-1 bg-surface-container text-xs rounded-full text-primary hover:bg-surface-low flex items-center gap-1">
+                        {link.replace(/^https?:\/\//, '').split('/')[0]} <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Research Links */}
-            {brief.researchLinks?.filter(Boolean).length > 0 && (
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2">Research Links</p>
-                <div className="flex flex-wrap gap-2">
-                  {brief.researchLinks.filter(Boolean).map((link, i) => (
-                    <a key={i} href={link.startsWith('http') ? link : `https://${link}`} target="_blank" rel="noreferrer"
-                      className="px-3 py-1 bg-surface-container text-xs rounded-full text-primary hover:bg-surface-low flex items-center gap-1">
-                      {link.replace(/^https?:\/\//, '').split('/')[0]} <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  ))}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )
         )}
 
         {/* Input Table (expandable) */}
@@ -294,8 +314,9 @@ function CallBriefPanel({ company, product, targetTitle }: { company: CompanyRes
 export default function Home() {
   const [campaignName, setCampaignName] = useState('')
   const [product, setProduct] = useState('')
-  const [targetTitle, setTargetTitle] = useState('')
-  const [companiesInput, setCompaniesInput] = useState('')
+  const [rows, setRows] = useState<CompanyRow[]>(DEFAULT_ROWS)
+  const [showPaste, setShowPaste] = useState(false)
+  const [pasteText, setPasteText] = useState('')
   const [runStatus, setRunStatus] = useState<'idle' | 'running' | 'done'>('idle')
   const [results, setResults] = useState<CompanyResult[]>([])
   const [progress, setProgress] = useState<Record<string, string>>({})
@@ -303,10 +324,40 @@ export default function Home() {
   const [activeBriefId, setActiveBriefId] = useState<string | null>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
-  const companies = companiesInput.split('\n').map(c => c.trim()).filter(Boolean)
+  const validRows = rows.filter(r => r.name.trim())
+
+  function updateRow(i: number, field: 'name' | 'website', value: string) {
+    setRows(prev => prev.map((r, j) => j === i ? { ...r, [field]: value } : r))
+  }
+
+  function removeRow(i: number) {
+    setRows(prev => prev.filter((_, j) => j !== i))
+  }
+
+  function addRow() {
+    setRows(prev => [...prev, { name: '', website: '' }])
+  }
+
+  function handlePasteImport() {
+    const lines = pasteText.trim().split('\n').filter(Boolean)
+    const newRows: CompanyRow[] = []
+    for (const line of lines) {
+      const parts = line.split('\t')
+      if (parts.length >= 2) {
+        newRows.push({ name: parts[0].trim(), website: parts[1].trim() })
+      } else if (parts[0].trim()) {
+        newRows.push({ name: parts[0].trim(), website: '' })
+      }
+    }
+    if (newRows.length) {
+      setRows(newRows)
+      setPasteText('')
+      setShowPaste(false)
+    }
+  }
 
   async function runAnalysis() {
-    if (!companies.length) return
+    if (!validRows.length) return
     setRunStatus('running')
     setResults([])
     setProgress({})
@@ -316,7 +367,7 @@ export default function Home() {
     const response = await fetch('/api/enrich', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ companies, product, targetTitle, campaignName }),
+      body: JSON.stringify({ companies: validRows, product, campaignName }),
     })
 
     const reader = response.body!.getReader()
@@ -350,13 +401,14 @@ export default function Home() {
   }
 
   function selectTop3() {
-    const top = results.slice(0, 3).map(r => r.id)
+    const top = results.filter(r => r.score.status !== 'DISQUALIFIED').slice(0, 3).map(r => r.id)
     setSelected(new Set(top))
   }
 
   function selectTop30() {
-    const count = Math.ceil(results.length * 0.3)
-    const top = results.slice(0, count).map(r => r.id)
+    const qualified = results.filter(r => r.score.status !== 'DISQUALIFIED')
+    const count = Math.ceil(qualified.length * 0.3)
+    const top = qualified.slice(0, count).map(r => r.id)
     setSelected(new Set(top))
   }
 
@@ -369,7 +421,8 @@ export default function Home() {
   }
 
   const callNow = results.filter(r => r.score.status === 'CALL NOW').length
-  const avg = results.length ? (results.reduce((s, r) => s + r.score.total, 0) / results.length).toFixed(1) : '—'
+  const qualified = results.filter(r => r.score.status !== 'DISQUALIFIED')
+  const avg = qualified.length ? (qualified.reduce((s, r) => s + r.score.total, 0) / qualified.length).toFixed(0) : '—'
   const activeCompany = results.find(r => r.id === activeBriefId)
 
   return (
@@ -393,56 +446,137 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         {/* Setup */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Campaign info */}
           <div className="bg-white rounded-2xl shadow-card p-6 space-y-4">
             <h2 className="font-bold text-on-surface">Campaign Setup</h2>
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-on-surface-variant mb-1.5">Campaign Name</label>
               <input value={campaignName} onChange={e => setCampaignName(e.target.value)}
-                placeholder="Q3 GTM Leaders Outreach"
+                placeholder="Q3 Healthcare Outreach"
                 className="w-full px-3 py-2.5 rounded-lg border border-outline-variant text-sm focus:outline-none focus:border-primary" />
             </div>
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-on-surface-variant mb-1.5">What You&apos;re Selling</label>
-              <textarea value={product} onChange={e => setProduct(e.target.value)} rows={2}
-                placeholder="AI-powered outbound intelligence platform that scores and enriches leads..."
+              <textarea value={product} onChange={e => setProduct(e.target.value)} rows={4}
+                placeholder="Describe your product and who it's for — e.g. 'AI-powered referral and scheduling automation for PE-backed specialty groups. Reduces fax volume and no-shows by 40%.'"
                 className="w-full px-3 py-2.5 rounded-lg border border-outline-variant text-sm focus:outline-none focus:border-primary resize-none" />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-on-surface-variant mb-1.5">Target Title</label>
-              <input value={targetTitle} onChange={e => setTargetTitle(e.target.value)}
-                placeholder="VP of Sales, Head of GTM, CRO"
-                className="w-full px-3 py-2.5 rounded-lg border border-outline-variant text-sm focus:outline-none focus:border-primary" />
+            <div className="p-3 bg-surface-low rounded-lg">
+              <p className="text-xs text-on-surface-variant">
+                <span className="font-semibold text-on-surface">Scoring: </span>
+                ICP Fit /30 · Workflow Pain /20 · Scale /15 · Buying Committee /15 · Growth /10 · Messaging /10
+              </p>
+              <p className="text-xs text-on-surface-variant mt-1">
+                <span className="text-green-600 font-semibold">≥80 CALL NOW</span> · <span className="text-amber-600 font-semibold">60–79 SEQUENCE</span> · <span className="text-gray-500 font-semibold">&lt;60 DEPRIORITIZE</span> · <span className="text-red-600 font-semibold">Hospitals = DQ</span>
+              </p>
             </div>
           </div>
 
+          {/* Company table input */}
           <div className="bg-white rounded-2xl shadow-card p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-on-surface">Companies</h2>
-              <span className="text-xs text-on-surface-variant">{companies.length} companies</span>
+              <span className="text-xs text-on-surface-variant">{validRows.length} {validRows.length === 1 ? 'company' : 'companies'}</span>
             </div>
-            <textarea value={companiesInput} onChange={e => setCompaniesInput(e.target.value)} rows={7}
-              placeholder={"Surface Labs\nStripe\nNotion\nLinear\nVercel\n\nOne company per line — names or domains both work"}
-              className="w-full px-3 py-2.5 rounded-lg border border-outline-variant text-sm focus:outline-none focus:border-primary resize-none font-mono" />
-            <button onClick={runAnalysis} disabled={!companies.length || runStatus === 'running'}
+
+            {/* Table */}
+            <div className="border border-outline-variant rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-surface-low border-b border-outline-variant">
+                  <tr>
+                    <th className="text-left px-3 py-2 text-xs font-semibold text-on-surface-variant">Company Name</th>
+                    <th className="text-left px-3 py-2 text-xs font-semibold text-on-surface-variant">Website</th>
+                    <th className="w-8"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, i) => (
+                    <tr key={i} className="border-b border-outline-variant/50 last:border-0">
+                      <td className="px-2 py-1.5">
+                        <input
+                          value={row.name}
+                          onChange={e => updateRow(i, 'name', e.target.value)}
+                          placeholder="Company name"
+                          className="w-full px-1.5 py-1 text-sm rounded border-0 focus:outline-none focus:bg-primary/5 bg-transparent"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          value={row.website}
+                          onChange={e => updateRow(i, 'website', e.target.value)}
+                          placeholder="domain.com"
+                          className="w-full px-1.5 py-1 text-sm rounded border-0 focus:outline-none focus:bg-primary/5 bg-transparent font-mono text-xs"
+                        />
+                      </td>
+                      <td className="pr-2">
+                        <button onClick={() => removeRow(i)}
+                          className="w-6 h-6 flex items-center justify-center rounded hover:bg-red-50 text-on-surface-variant hover:text-red-500 transition-colors">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Add row + paste */}
+            <div className="flex items-center gap-2">
+              <button onClick={addRow}
+                className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors px-2 py-1.5 rounded-lg hover:bg-surface-low">
+                <Plus className="w-3.5 h-3.5" /> Add Row
+              </button>
+              <button onClick={() => setShowPaste(s => !s)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors px-2 py-1.5 rounded-lg hover:bg-surface-low">
+                <ClipboardPaste className="w-3.5 h-3.5" /> Paste from Sheets
+              </button>
+            </div>
+
+            {/* Paste zone */}
+            {showPaste && (
+              <div className="space-y-2">
+                <p className="text-xs text-on-surface-variant">Copy two columns from Google Sheets (Company Name | Website) and paste below:</p>
+                <textarea
+                  value={pasteText}
+                  onChange={e => setPasteText(e.target.value)}
+                  rows={4}
+                  placeholder={"Elevate ENT Partners\televateent.com\nGrowth Orthopedics\tgrowthorthopedics.com"}
+                  className="w-full px-3 py-2 rounded-lg border border-outline-variant text-xs font-mono focus:outline-none focus:border-primary resize-none"
+                />
+                <div className="flex gap-2">
+                  <button onClick={handlePasteImport}
+                    disabled={!pasteText.trim()}
+                    className="px-3 py-1.5 text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50">
+                    Import Rows
+                  </button>
+                  <button onClick={() => { setShowPaste(false); setPasteText('') }}
+                    className="px-3 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-low transition-colors">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <button onClick={runAnalysis} disabled={!validRows.length || runStatus === 'running'}
               className="w-full py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               {runStatus === 'running'
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing {companies.length} companies...</>
-                : <><Zap className="w-4 h-4" /> Analyze {companies.length} {companies.length === 1 ? 'Company' : 'Companies'} →</>
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing {validRows.length} companies...</>
+                : <><Zap className="w-4 h-4" /> Analyze {validRows.length} {validRows.length === 1 ? 'Company' : 'Companies'} →</>
               }
             </button>
           </div>
         </div>
 
-        {/* Progress indicators */}
+        {/* Progress */}
         {Object.keys(progress).length > 0 && (
           <div className="bg-white rounded-2xl shadow-card p-4 space-y-2">
             <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-3">Processing</p>
             {Object.entries(progress).map(([company, message]) => (
               <div key={company} className="flex items-center gap-3">
-                <span className="font-medium text-sm w-36 truncate">{company}</span>
+                <span className="font-medium text-sm w-48 truncate">{company}</span>
                 <ProgressBadge message={message} />
               </div>
             ))}
@@ -452,12 +586,16 @@ export default function Home() {
         {/* Results */}
         {results.length > 0 && (
           <div ref={resultsRef} className="space-y-4">
-            {/* Stats bar */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <span className="text-sm text-on-surface-variant"><strong className="text-on-surface">{results.length}</strong> companies</span>
-                <span className="text-sm text-on-surface-variant">Avg score <strong className="text-on-surface">{avg}</strong></span>
+                <span className="text-sm text-on-surface-variant">Avg score <strong className="text-on-surface">{avg}/100</strong></span>
                 <span className="text-sm text-green-600 font-semibold">{callNow} call-ready</span>
+                {results.filter(r => r.score.status === 'DISQUALIFIED').length > 0 && (
+                  <span className="text-sm text-red-500 font-semibold">
+                    {results.filter(r => r.score.status === 'DISQUALIFIED').length} DQ&apos;d
+                  </span>
+                )}
               </div>
               <div className="flex gap-2">
                 <button onClick={selectTop3} className="px-3 py-1.5 text-xs font-semibold bg-surface-container rounded-lg hover:bg-surface-low transition-colors">
@@ -474,14 +612,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Table */}
             <div className="bg-white rounded-2xl shadow-card overflow-hidden">
               <table className="w-full">
                 <thead className="border-b border-outline-variant">
                   <tr>
                     <th className="w-10 py-3 px-4"></th>
                     <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wide text-on-surface-variant">Company</th>
-                    <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wide text-on-surface-variant w-48">Score</th>
+                    <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wide text-on-surface-variant w-52">Score /100</th>
                     <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wide text-on-surface-variant">Status</th>
                     <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wide text-on-surface-variant">Top Signal</th>
                     <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wide text-on-surface-variant">Contact</th>
@@ -492,21 +629,28 @@ export default function Home() {
                   {results.map((r) => {
                     const topSignal = r.inputData.find(d => d.type === 'Buying Signal')?.value ?? r.inputData.find(d => d.type === 'Pain Point')?.value ?? '—'
                     const contact = r.contacts[0]
+                    const isDQ = r.score.status === 'DISQUALIFIED'
                     return (
                       <tr key={r.id} className={cn('border-b border-outline-variant/50 transition-colors',
+                        isDQ ? 'bg-red-50/40' :
                         selected.has(r.id) ? 'bg-primary/5' : 'hover:bg-surface-low',
                         activeBriefId === r.id && 'bg-primary/10'
                       )}>
                         <td className="py-3 px-4">
                           <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleSelect(r.id)}
-                            className="w-4 h-4 accent-primary" />
+                            disabled={isDQ}
+                            className="w-4 h-4 accent-primary disabled:opacity-30" />
                         </td>
                         <td className="py-3 px-4">
                           <div className="font-semibold text-sm">{r.name}</div>
                           <div className="text-xs text-on-surface-variant">{r.domain} · {r.industry}</div>
                         </td>
                         <td className="py-3 px-4">
-                          <ScoreBar score={r.score.total} />
+                          {isDQ ? (
+                            <span className="text-xs text-red-500 font-semibold">Disqualified</span>
+                          ) : (
+                            <ScoreBar score={r.score.total} max={100} />
+                          )}
                         </td>
                         <td className="py-3 px-4">
                           <StatusBadge status={r.score.status} />
@@ -527,11 +671,13 @@ export default function Home() {
                             className={cn('px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors',
                               activeBriefId === r.id
                                 ? 'bg-on-surface text-white'
+                                : isDQ
+                                ? 'bg-red-50 text-red-500 hover:bg-red-100'
                                 : r.score.status === 'CALL NOW'
                                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                 : 'bg-surface-container text-on-surface-variant hover:bg-surface-low'
                             )}>
-                            {activeBriefId === r.id ? 'Close' : r.score.status === 'CALL NOW' ? 'Call Brief' : 'Details'}
+                            {activeBriefId === r.id ? 'Close' : isDQ ? 'Why DQ?' : r.score.status === 'CALL NOW' ? 'Call Brief' : 'Details'}
                           </button>
                         </td>
                       </tr>
@@ -541,12 +687,10 @@ export default function Home() {
               </table>
             </div>
 
-            {/* Call Brief */}
             {activeCompany && (
-              <CallBriefPanel key={activeCompany.id} company={activeCompany} product={product} targetTitle={targetTitle} />
+              <CallBriefPanel key={activeCompany.id} company={activeCompany} product={product} />
             )}
 
-            {/* Bottom CTA */}
             {selected.size > 0 && !activeBriefId && (
               <div className="bg-primary rounded-2xl p-5 flex items-center justify-between">
                 <div>
@@ -570,7 +714,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-outline-variant mt-16 py-6 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-on-surface-variant">
           <span>Sources: Exa · Apollo · Brave · Clay · Firecrawl · Gemini · OpenAI</span>

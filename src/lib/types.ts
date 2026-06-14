@@ -11,9 +11,8 @@ export interface InputDataPoint {
 
 export interface ScoreDimension {
   name: string
-  weight: number
+  maxScore: number
   score: number
-  weighted: number
   evidence: string
   confidence: 'High' | 'Medium' | 'Low'
   researchUrl?: string
@@ -46,7 +45,7 @@ export interface CallBrief {
 export interface OutcomeScore {
   dimensions: ScoreDimension[]
   total: number
-  status: 'CALL NOW' | 'SEQUENCE' | 'DEPRIORITIZE'
+  status: 'CALL NOW' | 'SEQUENCE' | 'DEPRIORITIZE' | 'DISQUALIFIED'
 }
 
 export interface CompanyResult {
