@@ -3,6 +3,62 @@
 
 ---
 
+## Tech Stack
+
+| Layer | Technology | Notes |
+|-------|-----------|-------|
+| **Frontend** | Next.js 14 (App Router) + React 18 + Tailwind CSS | Single-page, no routing — all state managed in React. Lucide React for icons. Deployed on Vercel. |
+| **Backend** | Next.js API Routes (Node.js serverless) | Two routes: `POST /api/enrich` streams results via SSE as each company completes. `PUT /api/enrich` generates call briefs on demand. Runs on Vercel Functions (300s timeout). |
+| **Database / SQL** | None (stateless) — **Supabase recommended for v2** | Currently all results are computed on the fly and held in React state. To persist campaigns, save results, and share briefs via link → add Supabase (Postgres + RLS). Schema: `campaigns`, `companies`, `contacts`, `call_briefs`. |
+| **AI / Scoring** | Google Gemini 2.0 Flash (primary) → OpenAI GPT-4o-mini (fallback) | Gemini scores all 6 dimensions and generates call briefs. OpenAI fires automatically if Gemini fails or if `OPENAI_API_KEY` is set and preferred. |
+| **Primary Scraper** | Exa.ai | Handles company discovery, deep enrichment, pain point research, contact finding. Uses `auto` type for speed and `deep` type for synthesis + structured JSON output. |
+| **Contact Enrichment** | Apollo.io (primary) → Exa fallback | Apollo finds contacts by domain + title and returns verified emails. If `APOLLO_API_KEY` is not set, Exa searches LinkedIn instead. |
+| **Website Scraper** | Firecrawl (primary) → Exa `/contents` fallback | Deep scrapes company websites (homepage, /integrations, /careers). Falls back to Exa's `/contents` endpoint if Firecrawl key not set. |
+| **Search Redundancy** | Brave Search API (optional) | Adds a third independent web search source for pain points and news. Fires in parallel with Exa when `BRAVE_API_KEY` is set. Prevents single-source misses. |
+| **Orchestration** | Clay API (optional) | When `CLAY_API_KEY` is set, Clay's native enrichments (LinkedIn, Clearbit, etc.) run alongside our custom pipeline. Results merge into the same output tables. |
+| **Deployment** | Vercel | Auto-deploys from `main` branch on GitHub push. Env vars managed via Vercel dashboard. |
+
+### Environment Variables
+
+```bash
+# Required — app will not work without these
+EXA_API_KEY=                      # exa.ai — primary scraper
+GOOGLE_GENERATIVE_AI_API_KEY=     # Google AI Studio — scoring + briefs
+
+# Optional — each adds a redundancy layer; app works fine without them
+APOLLO_API_KEY=                   # apollo.io — contact emails (falls back to Exa)
+FIRECRAWL_API_KEY=                # firecrawl.dev — website scraping (falls back to Exa)
+OPENAI_API_KEY=                   # openai.com — AI fallback if Gemini fails
+BRAVE_API_KEY=                    # brave.com/search/api — third search source
+CLAY_API_KEY=                     # clay.com — native enrichments (LinkedIn, Clearbit)
+```
+
+### Recommended v2 Additions (Supabase)
+
+```sql
+-- campaigns: one row per analysis run
+create table campaigns (
+  id uuid default gen_random_uuid() primary key,
+  name text,
+  product text,
+  target_title text,
+  created_at timestamptz default now()
+);
+
+-- companies: enriched results per campaign
+create table companies (
+  id uuid default gen_random_uuid() primary key,
+  campaign_id uuid references campaigns(id) on delete cascade,
+  name text, domain text, industry text,
+  score numeric, status text,
+  input_data jsonb, contacts jsonb,
+  score_breakdown jsonb, call_brief jsonb,
+  created_at timestamptz default now()
+);
+```
+
+---
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                                                             │
