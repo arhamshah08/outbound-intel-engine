@@ -1,5 +1,5 @@
 import { exaSearch, exaDeep, apolloSearch, braveSearch } from './exa'
-import { scoreCompany, generateBrief } from './ai'
+import { scoreCompany, generateBrief, scoreContacts } from './ai'
 import type { CompanyResult, InputDataPoint, Contact } from './types'
 
 const COMPANY_SCHEMA = {
@@ -16,8 +16,38 @@ const COMPANY_SCHEMA = {
     pain_summary: { type: 'string', description: 'Key business pain points and challenges' },
     key_investors: { type: 'string', description: 'Notable investors or backers' },
     phone: { type: 'string', description: 'Company main phone number' },
+    pe_backer:      { type: 'string', description: 'Private equity firm or investor backing this company, if any (e.g. "KKR", "Warburg Pincus")' },
+    num_locations:  { type: 'string', description: 'Number of offices, clinics, or practice sites (e.g. "12 sites", "8 locations across 3 states")' },
+    emr_system:     { type: 'string', description: 'Electronic Medical Record system they use (e.g. "Epic", "Athena", "eClinicalWorks", "Modernizing Medicine")' },
+    specialties:    { type: 'string', description: 'Medical specialties offered (e.g. "Orthopedics, Sports Medicine, Physical Therapy")' },
+    recent_news:    { type: 'string', description: 'Most recent notable event: acquisition, expansion, funding, new exec hire, or product launch in 2024-2025' },
+    location: { type: 'string', description: 'City and state (or city and country) of company headquarters, e.g. "Austin, TX" or "Chicago, IL"' },
   },
   required: ['name', 'domain', 'industry'],
+}
+
+const LEADERSHIP_SCHEMA = {
+  type: 'object',
+  properties: {
+    exec_1_name: { type: 'string', description: 'Full name of executive 1' },
+    exec_1_title: { type: 'string', description: 'Exact title of executive 1' },
+    exec_1_context: { type: 'string', description: 'What executive 1 owns or their background' },
+    exec_2_name: { type: 'string', description: 'Full name of executive 2' },
+    exec_2_title: { type: 'string', description: 'Exact title of executive 2' },
+    exec_2_context: { type: 'string', description: 'What executive 2 owns or their background' },
+    exec_3_name: { type: 'string', description: 'Full name of executive 3' },
+    exec_3_title: { type: 'string', description: 'Exact title of executive 3' },
+    exec_3_context: { type: 'string', description: 'What executive 3 owns or their background' },
+    exec_4_name: { type: 'string', description: 'Full name of executive 4' },
+    exec_4_title: { type: 'string', description: 'Exact title of executive 4' },
+    exec_4_context: { type: 'string', description: 'What executive 4 owns or their background' },
+    exec_5_name: { type: 'string', description: 'Full name of executive 5' },
+    exec_5_title: { type: 'string', description: 'Exact title of executive 5' },
+    exec_5_context: { type: 'string', description: 'What executive 5 owns or their background' },
+    exec_6_name: { type: 'string', description: 'Full name of executive 6' },
+    exec_6_title: { type: 'string', description: 'Exact title of executive 6' },
+    exec_6_context: { type: 'string', description: 'What executive 6 owns or their background' },
+  },
 }
 
 const PAIN_SCHEMA = {
@@ -34,11 +64,11 @@ const PAIN_SCHEMA = {
   },
 }
 
-type OnProgress = (step: string, message: string, iteration?: number) => void
+type OnProgress = (step: string, message: string, iteration?: number, snippet?: string) => void
 
 export async function enrichCompany(
   input: string,
-  opts: { product: string; domain?: string },
+  opts: { product: string; domain?: string; tags?: string[] },
   onProgress: OnProgress,
 ): Promise<CompanyResult> {
   const id = Math.random().toString(36).slice(2)
@@ -53,7 +83,7 @@ export async function enrichCompany(
   // ── ITERATION 1: Broad discovery ──────────────────────────────────────────
   onProgress('discover', 'Querying Exa · Company overview + pain points + contacts', 1)
 
-  const [discoveryResults, painResults, contactResults] = await Promise.all([
+  const [discoveryResults, painResults, leadershipResults] = await Promise.all([
     exaDeep(
       `${input} company overview funding team size revenue investors`,
       'Extract factual company information. Be concise and accurate.',
@@ -66,11 +96,12 @@ export async function enrichCompany(
       PAIN_SCHEMA,
     ).catch(() => ({ structured: {}, results: [] })),
 
-    exaSearch(`${input} leadership team executives COO CMO VP Operations site:linkedin.com`, 3)
-      .catch(() => []),
+    exaDeep(
+      `${input} ${opts.domain ?? ''} leadership team executives management about us COO CFO CIO VP Operations`,
+      'Extract named executives from the company leadership or about page. Find COO, CFO, VP Operations, CIO, CMO and other senior leaders with their exact titles and what they own.',
+      LEADERSHIP_SCHEMA,
+    ).catch(() => ({ structured: {}, results: [] })),
   ])
-
-  onProgress('enrich', 'Processing signals · Building intelligence profile', 1)
 
   const co = discoveryResults.structured as Record<string, string>
   const pn = painResults.structured as Record<string, string>
@@ -87,6 +118,12 @@ export async function enrichCompany(
   if (co.revenue) addPoint('Exa (deep)', 'Revenue', co.revenue, 'Medium', discoveryResults.results[0]?.url ?? '')
   if (co.key_investors) addPoint('Exa (deep)', 'Investors', co.key_investors, 'High', discoveryResults.results[1]?.url ?? '')
   if (co.buying_signals) addPoint('Exa (deep)', 'Buying Signal', co.buying_signals, 'High', discoveryResults.results[0]?.url ?? '')
+  if (co.pe_backer)     addPoint('Exa (deep)', 'PE Backer', co.pe_backer, 'High', discoveryResults.results[0]?.url ?? '')
+  if (co.num_locations) addPoint('Exa (deep)', 'Locations', co.num_locations, 'Medium', discoveryResults.results[0]?.url ?? '')
+  if (co.emr_system)    addPoint('Exa (deep)', 'EMR System', co.emr_system, 'Medium', discoveryResults.results[0]?.url ?? '')
+  if (co.specialties)   addPoint('Exa (deep)', 'Specialties', co.specialties, 'High', discoveryResults.results[0]?.url ?? '')
+  if (co.recent_news)   addPoint('Exa (deep)', 'Recent News', co.recent_news, 'High', discoveryResults.results[0]?.url ?? '')
+  if (co.location) addPoint('Exa (deep)', 'Location', co.location, 'High', discoveryResults.results[0]?.url ?? '')
 
   // Add pain points
   if (pn.pain_1) addPoint('Exa (deep)', 'Pain Point', pn.pain_1, 'High', pn.pain_1_url ?? painResults.results[0]?.url ?? '')
@@ -94,17 +131,43 @@ export async function enrichCompany(
   if (pn.pain_3) addPoint('Exa (deep)', 'Pain Point', pn.pain_3, 'Medium', pn.pain_3_url ?? painResults.results[2]?.url ?? '')
   if (pn.growth_signal) addPoint('Exa (deep)', 'Buying Signal', pn.growth_signal, 'High', pn.growth_signal_url ?? '')
 
-  // Add contacts from LinkedIn search
-  for (const r of contactResults.slice(0, 3)) {
-    if (r.highlights?.[0]) {
-      const nameMatch = r.title?.split(' - ')?.[0] ?? ''
-      const titleMatch = r.title?.split(' - ')?.[1]
-      if (nameMatch) {
-        const title = titleMatch || 'Executive'
-        contacts.push({ name: nameMatch, title, linkedin: r.url })
-        addPoint('Exa (auto)', 'Contact', `${nameMatch} — ${title}`, 'High', r.url)
-      }
-    }
+  // Extract named executives from leadership page
+  const ldr = leadershipResults.structured as Record<string, string>
+  const rawExecs: Contact[] = []
+  for (let i = 1; i <= 6; i++) {
+    const execName = ldr[`exec_${i}_name`]
+    const execTitle = ldr[`exec_${i}_title`]
+    if (!execName) break
+    rawExecs.push({ name: execName, title: execTitle || 'Executive', whyThis: ldr[`exec_${i}_context`] || undefined })
+    addPoint('Exa (deep)', 'Contact', `${execName} — ${execTitle}`, 'High', leadershipResults.results[0]?.url ?? '')
+  }
+  contacts.push(...rawExecs)
+
+  // Emit enrich snapshot — what we found
+  const enrichSnippet = [
+    co.description ? co.description.slice(0, 80) : null,
+    co.funding ? `Funding: ${co.funding}` : null,
+    co.headcount ? `Headcount: ${co.headcount}` : null,
+    pn.pain_1 ? `Pain: ${pn.pain_1.slice(0, 70)}` : null,
+  ].filter(Boolean).join(' · ')
+  onProgress('enrich', 'Signals extracted · Processing intelligence', 1, enrichSnippet || undefined)
+
+  // ── LINKEDIN LOOKUP: parallel search per executive ────────────────────────
+  if (rawExecs.length) {
+    onProgress('contacts', `Finding LinkedIn profiles for ${rawExecs.length} decision-makers`, 2,
+      rawExecs.map(e => `${e.name} (${e.title})`).join(', '))
+    const linkedinSearches = await Promise.all(
+      rawExecs.map(exec =>
+        exaSearch(`"${exec.name}" ${name} site:linkedin.com/in`, 1).catch(() => [])
+      )
+    )
+    linkedinSearches.forEach((results, i) => {
+      const url = results[0]?.url
+      if (url?.includes('linkedin.com/in/')) contacts[i].linkedin = url
+    })
+    const found = contacts.filter(c => c.linkedin).length
+    onProgress('contacts', `${found}/${rawExecs.length} LinkedIn profiles found`, 2,
+      contacts.filter(c => c.linkedin).map(c => c.name).join(', ') || undefined)
   }
 
   // ── ITERATION 2: Gap filling ───────────────────────────────────────────────
@@ -112,7 +175,10 @@ export async function enrichCompany(
   const hasPainPoints = inputData.filter(d => d.type === 'Pain Point').length >= 2
 
   if (!hasEmail || !hasPainPoints) {
-    onProgress('contacts', 'Finding decision-makers via Apollo + LinkedIn', 2)
+    const contactSnippet = contacts.length > 0
+      ? contacts.map(c => `${c.name} (${c.title})`).join(', ')
+      : 'Searching Apollo + LinkedIn...'
+    onProgress('contacts', 'Finding decision-makers via Apollo + LinkedIn', 2, contactSnippet)
 
     // Try Apollo for email (primary contact source)
     const apolloContacts = await apolloSearch(domain, 'Chief Operating Officer').catch(() => [])
@@ -145,7 +211,8 @@ export async function enrichCompany(
   // ── ITERATION 3: Targeted deep-dive on best available source ───────────────
   const lowConfidence = inputData.filter(d => d.confidence === 'Low' && !d.gap)
   if (lowConfidence.length > 0) {
-    onProgress('deep-dive', 'Targeted research · Filling confidence gaps', 3)
+    onProgress('deep-dive', 'Targeted research · Filling confidence gaps', 3,
+      `Researching ${lowConfidence.length} low-confidence signal(s)`)
     const extraResults = await exaSearch(`${name} ${domain} funding news site:techcrunch.com OR site:crunchbase.com`)
     for (const r of extraResults.slice(0, 2)) {
       if (r.highlights?.[0]) {
@@ -163,19 +230,35 @@ export async function enrichCompany(
   }
 
   // ── SCORING ────────────────────────────────────────────────────────────────
-  onProgress('scoring', 'Gemini AI · 6-dimension scoring')
+  const scoringSnippet = [
+    `${inputData.length} data points collected`,
+    contacts.length > 0 ? `${contacts.length} contact(s): ${contacts[0].name}` : 'No contacts found',
+    inputData.filter(d => d.type === 'Pain Point').length > 0
+      ? `${inputData.filter(d => d.type === 'Pain Point').length} pain triggers`
+      : null,
+  ].filter(Boolean).join(' · ')
+  onProgress('scoring', 'Gemini AI · 6-dimension scoring', undefined, scoringSnippet)
 
   const partial: Partial<CompanyResult> = {
     name, domain, industry,
     headcount: co.headcount || 'Unknown',
     funding: co.funding || 'Unknown',
     revenue: co.revenue || 'Unknown',
+    location: (co.location as string | undefined) || '',
+    peBacker:      (co.pe_backer as string | undefined) || '',
+    numLocations:  (co.num_locations as string | undefined) || '',
+    emrSystem:     (co.emr_system as string | undefined) || '',
+    specialties:   (co.specialties as string | undefined) || '',
+    recentNews:    (co.recent_news as string | undefined) || '',
     description: co.description || '',
     inputData,
     contacts,
   }
 
-  const score = await scoreCompany(partial, opts.product)
+  const [score, enrichedContacts] = await Promise.all([
+    scoreCompany(partial, opts.product, opts.tags),
+    scoreContacts(contacts, partial, opts.product),
+  ])
 
   return {
     id,
@@ -186,13 +269,19 @@ export async function enrichCompany(
     headcount: co.headcount || 'Unknown',
     funding: co.funding || 'Unknown',
     revenue: co.revenue || 'Unknown',
+    location: (co.location as string | undefined) || '',
+    peBacker:      (co.pe_backer as string | undefined) || '',
+    numLocations:  (co.num_locations as string | undefined) || '',
+    emrSystem:     (co.emr_system as string | undefined) || '',
+    specialties:   (co.specialties as string | undefined) || '',
+    recentNews:    (co.recent_news as string | undefined) || '',
     description: co.description || '',
     status: 'done',
     statusMessage: `${score.status} — ${score.total}/100`,
     iteration: 3,
     inputData,
-    contacts,
-    mainPhone: (co.phone as string | undefined) || contacts.find(c => c.phone)?.phone,
+    contacts: enrichedContacts,
+    mainPhone: (co.phone as string | undefined) || enrichedContacts.find(c => c.phone)?.phone,
     score,
   }
 }
