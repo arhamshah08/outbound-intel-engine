@@ -465,10 +465,16 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/70 mb-1.5">What You&apos;re Selling</label>
-              <textarea value={product} onChange={e => setProduct(e.target.value)} rows={3}
+              <div className="flex items-baseline justify-between mb-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/70">What You&apos;re Selling</label>
+                <span className="text-[10px] text-on-surface-variant/50 tabular-nums">{product.length} chars</span>
+              </div>
+              <textarea value={product} onChange={e => setProduct(e.target.value)} rows={4}
                 placeholder="AI-powered referral and scheduling automation for PE-backed specialty groups..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant text-sm focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:border-foreground/40 transition-all resize-none bg-surface-low/60" />
+                className="w-full px-3.5 py-3 rounded-xl border border-outline-variant text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:border-foreground/40 transition-all resize-none bg-surface-low/60" />
+              <p className="text-[11px] text-on-surface-variant/60 mt-1.5">
+                A clear product pitch helps the AI generate sharper outreach scripts.
+              </p>
             </div>
 
             {/* ICP Tags */}
@@ -499,11 +505,26 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 pt-1 border-t border-outline-variant/40">
-              <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/60">≥80 HIGH</span>
-              <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold border border-amber-200/60">60–79 MED</span>
-              <span className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-500 text-xs font-semibold border border-slate-200">&lt;60 LOW</span>
-              <span className="px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold border border-red-200/60">Hospital = DQ</span>
+            <div className="pt-3 border-t border-outline-variant/50">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 mb-2">Score legend</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-50/70 border border-emerald-100">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[11px] font-semibold text-emerald-800">≥ 80 · Call now</span>
+                </div>
+                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-amber-50/70 border border-amber-100">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  <span className="text-[11px] font-semibold text-amber-800">60–79 · Sequence</span>
+                </div>
+                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface-low border border-outline-variant">
+                  <span className="w-1.5 h-1.5 rounded-full bg-on-surface-variant/50" />
+                  <span className="text-[11px] font-semibold text-on-surface-variant">&lt; 60 · Deprioritize</span>
+                </div>
+                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-red-50/70 border border-red-100">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  <span className="text-[11px] font-semibold text-red-700">Hospital = DQ</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -515,37 +536,41 @@ export default function Home() {
             </div>
 
             <div className="border border-outline-variant rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead className="bg-surface-low border-b border-outline-variant">
                   <tr>
                     <th className="text-left px-3 py-2 text-xs font-semibold text-on-surface-variant">Company Name</th>
                     <th className="text-left px-3 py-2 text-xs font-semibold text-on-surface-variant">Website</th>
-                    <th className="w-8" />
+                    <th className="w-10" />
                   </tr>
                 </thead>
-                <tbody>
-                  {rows.map((row, i) => (
-                    <tr key={i} className="border-b border-outline-variant/40 last:border-0 group">
-                      <td className="px-2 py-1">
-                        <input value={row.name} onChange={e => updateRow(i, 'name', e.target.value)}
-                          placeholder="Company name"
-                          className="w-full px-2 py-1 text-sm rounded-lg focus:outline-none focus:bg-primary-surface bg-transparent transition-colors" />
-                      </td>
-                      <td className="px-2 py-1">
-                        <input value={row.website} onChange={e => updateRow(i, 'website', e.target.value)}
-                          placeholder="domain.com"
-                          className="w-full px-2 py-1 text-xs font-mono rounded-lg focus:outline-none focus:bg-primary-surface bg-transparent transition-colors text-on-surface-variant" />
-                      </td>
-                      <td className="pr-2">
-                        <button onClick={() => removeRow(i)}
-                          className="w-6 h-6 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-50 text-on-surface-variant hover:text-red-500 transition-all">
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
               </table>
+              <div className="max-h-[260px] overflow-y-auto">
+                <table className="w-full text-sm table-fixed">
+                  <tbody>
+                    {rows.map((row, i) => (
+                      <tr key={i} className="border-b border-outline-variant/40 last:border-0 group">
+                        <td className="px-2 py-1">
+                          <input value={row.name} onChange={e => updateRow(i, 'name', e.target.value)}
+                            placeholder="Company name"
+                            className="w-full px-2 py-1 text-sm rounded-lg focus:outline-none focus:bg-surface-low bg-transparent transition-colors" />
+                        </td>
+                        <td className="px-2 py-1">
+                          <input value={row.website} onChange={e => updateRow(i, 'website', e.target.value)}
+                            placeholder="domain.com"
+                            className="w-full px-2 py-1 text-xs font-mono rounded-lg focus:outline-none focus:bg-surface-low bg-transparent transition-colors text-on-surface-variant" />
+                        </td>
+                        <td className="pr-2 w-10">
+                          <button onClick={() => removeRow(i)}
+                            className="w-6 h-6 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-50 text-on-surface-variant hover:text-red-500 transition-all">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -589,73 +614,69 @@ export default function Home() {
         {/* Results */}
         {results.length > 0 && (
           <div ref={resultsRef} className="space-y-4 animate-slide-in">
-            {/* Metrics + Filter bar */}
-            <div className="space-y-3">
-              {/* Metric chips */}
-              <div className="flex flex-wrap gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-xl text-xs">
-                  <span className="text-muted-foreground">Analyzed</span>
-                  <strong className="text-foreground">{results.length}</strong>
+            {/* Unified summary + filter bar */}
+            <div className="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
+              {/* Top: summary metrics */}
+              <div className="flex items-center divide-x divide-outline-variant/60 bg-surface-low/40">
+                <div className="px-5 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Analyzed</p>
+                  <p className="text-lg font-extrabold text-on-surface leading-tight">{results.length}</p>
                 </div>
-                {avg !== null && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-xl text-xs">
-                    <span className="text-muted-foreground">Avg score</span>
-                    <strong className="text-foreground">{avg}/100</strong>
-                  </div>
-                )}
-                {counts.HIGH > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
-                    <span className="text-emerald-700">Call Now</span>
-                    <strong className="text-emerald-800">{counts.HIGH}</strong>
-                  </div>
-                )}
-                {counts.MED > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs">
-                    <span className="text-amber-700">Sequence</span>
-                    <strong className="text-amber-800">{counts.MED}</strong>
-                  </div>
-                )}
-                {counts.DQ > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl text-xs">
-                    <span className="text-red-600">DQ</span>
-                    <strong className="text-red-700">{counts.DQ}</strong>
-                  </div>
-                )}
-              </div>
-
-              {/* Filter row */}
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-1.5">
+                <div className="px-5 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Avg score</p>
+                  <p className="text-lg font-extrabold text-on-surface leading-tight tabular-nums">{avg ?? '—'}<span className="text-xs font-semibold text-on-surface-variant/60">/100</span></p>
+                </div>
+                <div className="px-5 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700/80">Call now</p>
+                  <p className="text-lg font-extrabold text-emerald-700 leading-tight tabular-nums">{counts.HIGH}</p>
+                </div>
+                <div className="px-5 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80">Sequence</p>
+                  <p className="text-lg font-extrabold text-amber-700 leading-tight tabular-nums">{counts.MED}</p>
+                </div>
+                <div className="px-5 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Low</p>
+                  <p className="text-lg font-extrabold text-on-surface-variant leading-tight tabular-nums">{counts.LOW}</p>
+                </div>
+                <div className="px-5 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-red-700/80">DQ</p>
+                  <p className="text-lg font-extrabold text-red-600 leading-tight tabular-nums">{counts.DQ}</p>
+                </div>
+                <div className="ml-auto px-3">
                   <button
                     onClick={() => { setResults([]); setProgress({}); setRunStatus('idle'); setAnalyzingList([]) }}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-border text-muted-foreground hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all">
-                    Clear
+                    className="px-3 py-1.5 text-xs font-semibold rounded-xl text-on-surface-variant hover:bg-red-50 hover:text-red-600 transition-all">
+                    Clear results
                   </button>
-                  <div className="w-px h-4 bg-border" />
+                </div>
+              </div>
+
+              {/* Bottom: filters */}
+              <div className="flex items-center gap-3 flex-wrap px-4 py-3 border-t border-outline-variant/60">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 mr-1">Filter</span>
+                <div className="flex items-center gap-1">
                   {(['ALL','HIGH','MED','LOW','DQ'] as Filter[]).map(f => (
                     <button key={f} onClick={() => { setFilter(f) }}
-                      className={cn('px-3 py-1.5 text-xs font-bold rounded-xl transition-all',
+                      className={cn('px-3 py-1 text-xs font-semibold rounded-lg transition-all',
                         filter === f
-                          ? f === 'HIGH' ? 'bg-emerald-600 text-white'
-                            : f === 'MED' ? 'bg-amber-500 text-white'
-                            : f === 'DQ'  ? 'bg-red-500 text-white'
-                            : f === 'LOW' ? 'bg-foreground/70 text-background'
-                            : 'bg-foreground text-background'
-                          : 'bg-card border border-border text-muted-foreground hover:bg-muted'
+                          ? 'bg-foreground text-background'
+                          : 'text-on-surface-variant hover:bg-surface-low'
                       )}>
-                      {f} {counts[f] > 0 && <span className="opacity-70 ml-0.5">({counts[f]})</span>}
+                      {f === 'ALL' ? 'All' : f === 'HIGH' ? 'Call now' : f === 'MED' ? 'Sequence' : f === 'LOW' ? 'Low' : 'DQ'}
+                      {counts[f] > 0 && <span className="ml-1 opacity-60 tabular-nums">{counts[f]}</span>}
                     </button>
                   ))}
                 </div>
 
-                {/* Location filter */}
-                <input
-                  type="text"
-                  value={locationFilter}
-                  onChange={e => setLocationFilter(e.target.value)}
-                  placeholder="Filter by location…"
-                  className="px-3 py-1.5 text-xs rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 w-44 placeholder:text-muted-foreground/60"
-                />
+                <div className="ml-auto flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={locationFilter}
+                    onChange={e => setLocationFilter(e.target.value)}
+                    placeholder="Filter by location…"
+                    className="px-3 py-1.5 text-xs rounded-lg border border-outline-variant bg-surface-low/60 focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:border-foreground/40 w-48 placeholder:text-on-surface-variant/50"
+                  />
+                </div>
               </div>
             </div>
 
