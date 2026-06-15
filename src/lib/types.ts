@@ -28,6 +28,7 @@ export interface Contact {
   name: string
   title: string
   email?: string
+  phone?: string
   linkedin?: string
   tenure?: string
 }
@@ -63,6 +64,7 @@ export interface CompanyResult {
   iteration: number
   inputData: InputDataPoint[]
   contacts: Contact[]
+  mainPhone?: string
   score: OutcomeScore
   callBrief?: CallBrief
   error?: string

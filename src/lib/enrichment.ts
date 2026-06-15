@@ -15,6 +15,7 @@ const COMPANY_SCHEMA = {
     buying_signals: { type: 'string', description: 'Comma-separated buying signals (hiring, funding, new exec, expansion)' },
     pain_summary: { type: 'string', description: 'Key business pain points and challenges' },
     key_investors: { type: 'string', description: 'Notable investors or backers' },
+    phone: { type: 'string', description: 'Company main phone number' },
   },
   required: ['name', 'domain', 'industry'],
 }
@@ -189,6 +190,7 @@ export async function enrichCompany(
     iteration: 3,
     inputData,
     contacts,
+    mainPhone: (co.phone as string | undefined) || contacts.find(c => c.phone)?.phone,
     score,
   }
 }

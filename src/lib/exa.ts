@@ -93,10 +93,11 @@ export async function apolloSearch(domain: string, title: string): Promise<{ nam
       }),
     })
     const data = await res.json()
-    return (data.people ?? []).map((p: { name: string; title: string; email: string; linkedin_url: string }) => ({
+    return (data.people ?? []).map((p: { name: string; title: string; email: string; linkedin_url: string; phone_numbers?: { sanitized_number: string }[] }) => ({
       name: p.name,
       title: p.title,
       email: p.email,
+      phone: p.phone_numbers?.[0]?.sanitized_number,
       linkedin: p.linkedin_url,
     }))
   } catch { return [] }
