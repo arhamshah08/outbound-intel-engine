@@ -2,7 +2,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -11,7 +10,6 @@ import {
 import { NavGroup } from "@/components/nav-group";
 import { footerNavLinks, navGroups } from "@/components/app-shared";
 import { NavUser } from "@/components/nav-user";
-import { ZapIcon } from "lucide-react";
 import Link from "next/link";
 
 export function AppSidebar() {
@@ -19,9 +17,6 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader className="h-14 justify-center">
         <SidebarMenuButton render={<Link href="/" />}>
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-primary text-primary-foreground shrink-0">
-            <ZapIcon className="h-3 w-3" />
-          </div>
           <span className="font-semibold tracking-tight">Outbound Intel</span>
         </SidebarMenuButton>
       </SidebarHeader>

@@ -1,14 +1,13 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import {
-  Zap,
-  Phone, Loader2, Plus, X, ClipboardPaste,
-  Search, Database, Users, Target, CheckCircle,
+  Loader2,
+  Phone, Plus, X, ClipboardPaste,
+  Search, Database, Users, Target, CheckCircle, Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CompanyResult } from '@/lib/types'
-import DecideModal     from '@/components/DecideModal'
+import { supabase }    from '@/lib/supabase'
 import DatabaseSetup   from '@/components/DatabaseSetup'
 import NetworkHero     from '@/components/NetworkHero'
 
@@ -27,7 +26,7 @@ const STAGES = [
   { key: 'enrich',   label: 'Enrich',     Icon: Database, desc: 'Signals · Investors · Tech' },
   { key: 'contacts', label: 'Contacts',   Icon: Users,    desc: 'Apollo · LinkedIn · Email' },
   { key: 'deep-dive',label: 'Deep Dive',  Icon: Target,   desc: 'Gap-fill · Targeted search' },
-  { key: 'scoring',  label: 'Score',      Icon: Zap,      desc: 'Gemini · 6 dimensions' },
+  { key: 'scoring',  label: 'Score',      Icon: Sparkles, desc: 'Gemini · 6 dimensions' },
 ]
 const STAGE_ORDER = ['discover', 'enrich', 'contacts', 'deep-dive', 'scoring', 'done']
 
@@ -203,6 +202,100 @@ function LivePipeline({
   )
 }
 
+// ─── Pipeline Button ──────────────────────────────────────────────────────────
+
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
+
+function PipelineButton({
+  company, campaignName, product,
+}: {
+  company: CompanyResult
+  campaignName: string
+  product: string
+}) {
+  const [added,      setAdded]      = useState(false)
+  const [flipping,   setFlipping]   = useState(false)
+  const [prospectId, setProspectId] = useState<string | null>(null)
+
+  async function toggle() {
+    if (flipping) return
+    const nextAdded = !added
+
+    // Flip animation: squish → swap content → unsquish
+    setFlipping(true)
+    await sleep(140)
+    setAdded(nextAdded)
+    await sleep(16)
+    setFlipping(false)
+
+    if (nextAdded) {
+      const savedProduct = typeof window !== 'undefined'
+        ? localStorage.getItem('vhProduct') ?? product
+        : product
+      const { data, error } = await supabase.from('prospects').insert({
+        company_name:     company.name,
+        domain:           company.domain,
+        industry:         company.industry,
+        headcount:        company.headcount,
+        funding:          company.funding,
+        location:         company.location ?? '',
+        description:      company.description,
+        score:            company.score.total,
+        score_status:     company.score.status,
+        score_dimensions: company.score.dimensions,
+        approach:         ['call', 'email', 'linkedin'],
+        status:           'active',
+        contacts:         company.contacts,
+        pain_points:      company.inputData.filter(d => d.type === 'Pain Point'),
+        notes:            '',
+        campaign_name:    campaignName,
+      }).select('id').single()
+
+      if (error || !data) {
+        // Revert on failure
+        setFlipping(true)
+        await sleep(140)
+        setAdded(false)
+        setProspectId(null)
+        await sleep(16)
+        setFlipping(false)
+        return
+      }
+      setProspectId(data.id)
+      // Generate brief in background
+      fetch('/api/enrich', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company, product: savedProduct, prospectId: data.id }),
+      }).catch(() => {})
+    } else {
+      const id = prospectId
+      setProspectId(null)
+      if (id) supabase.from('prospects').delete().eq('id', id).then(() => {})
+    }
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      title={added ? 'Click to remove from pipeline' : 'Add to pipeline'}
+      style={{
+        transform:  flipping ? 'scaleX(0)' : 'scaleX(1)',
+        transition: 'transform 0.14s ease-in-out',
+      }}
+      className={cn(
+        'px-3 py-1.5 text-xs font-semibold rounded-xl border transition-colors duration-150 whitespace-nowrap',
+        added
+          ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-red-500 hover:border-red-500'
+          : 'bg-foreground text-background border-transparent hover:opacity-80'
+      )}>
+      {added
+        ? <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Added</span>
+        : '+ Pipeline'}
+    </button>
+  )
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const VH_CAMPAIGN = 'Valerie Health — PE Specialty Groups'
@@ -210,13 +303,11 @@ const VH_PRODUCT  = 'Valerie Health automates referral management, scheduling, a
 const VH_TAGS     = ['PE-backed', 'Specialty Physician', '10–200 physicians', 'No hospital systems']
 
 export default function Home() {
-  const router = useRouter()
   const [campaignName, setCampaignName] = useState(VH_CAMPAIGN)
   const [product, setProduct]           = useState(VH_PRODUCT)
   const [icpTags, setIcpTags]           = useState<string[]>(VH_TAGS)
   const [tagInput, setTagInput]         = useState('')
   const [rows, setRows]                 = useState<CompanyRow[]>(DEFAULT_ROWS)
-  const [addedToast, setAddedToast]     = useState<string | null>(null)
   const [showPaste, setShowPaste]       = useState(false)
   const [pasteText, setPasteText]       = useState('')
   const [runStatus, setRunStatus]       = useState<'idle' | 'running' | 'done'>('idle')
@@ -225,7 +316,6 @@ export default function Home() {
   const [analyzingList, setAnalyzingList] = useState<string[]>([])
   const [filter, setFilter]             = useState<Filter>('ALL')
   const [locationFilter, setLocationFilter] = useState('')
-  const [decideTarget, setDecideTarget] = useState<CompanyResult | null>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -343,24 +433,6 @@ export default function Home() {
     <div className="space-y-6">
       <DatabaseSetup />
 
-      {decideTarget && (
-        <DecideModal
-          company={decideTarget}
-          campaignName={campaignName}
-          product={product}
-          onClose={() => setDecideTarget(null)}
-          onAdded={() => {
-            const name = decideTarget?.name ?? 'Company'
-            setDecideTarget(null)
-            setAddedToast(name)
-            setTimeout(() => {
-              setAddedToast(null)
-              router.push('/pipeline')
-            }, 1500)
-          }}
-        />
-      )}
-
       <div className="space-y-6">
         <>
 
@@ -372,14 +444,14 @@ export default function Home() {
           <div className="bg-white rounded-2xl shadow-card border border-outline-variant p-6 space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-                  <Target className="w-3.5 h-3.5 text-indigo-600" />
+                <div className="w-7 h-7 rounded-lg bg-foreground/5 flex items-center justify-center">
+                  <Target className="w-3.5 h-3.5 text-foreground/70" />
                 </div>
                 <h2 className="font-semibold text-sm text-on-surface tracking-tight">Campaign Setup</h2>
               </div>
               <button
                 onClick={() => { setCampaignName(VH_CAMPAIGN); setProduct(VH_PRODUCT); setIcpTags(VH_TAGS) }}
-                className="text-xs font-semibold text-primary hover:underline opacity-50 hover:opacity-100 transition-opacity"
+                className="text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:underline transition-colors"
               >
                 ↺ VH Defaults
               </button>
@@ -389,14 +461,14 @@ export default function Home() {
               <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/70 mb-1.5">Campaign Name</label>
               <input value={campaignName} onChange={e => setCampaignName(e.target.value)}
                 placeholder="Q3 Healthcare Outreach"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-slate-50/50" />
+                className="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant text-sm focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:border-foreground/40 transition-all bg-surface-low/60" />
             </div>
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/70 mb-1.5">What You&apos;re Selling</label>
               <textarea value={product} onChange={e => setProduct(e.target.value)} rows={3}
                 placeholder="AI-powered referral and scheduling automation for PE-backed specialty groups..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all resize-none bg-slate-50/50" />
+                className="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant text-sm focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:border-foreground/40 transition-all resize-none bg-surface-low/60" />
             </div>
 
             {/* ICP Tags */}
@@ -404,10 +476,10 @@ export default function Home() {
               <label className="block text-xs font-semibold uppercase tracking-widest text-on-surface-variant/70 mb-2">ICP Tags</label>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {icpTags.map(tag => (
-                  <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-200/60">
+                  <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-foreground/5 text-foreground text-xs font-medium border border-outline-variant">
                     {tag}
                     <button onClick={() => removeTag(tag)}
-                      className="ml-0.5 text-indigo-400 hover:text-indigo-700 transition-colors leading-none">
+                      className="ml-0.5 text-on-surface-variant hover:text-foreground transition-colors leading-none">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -419,9 +491,9 @@ export default function Home() {
                   onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag() } }}
                   placeholder="Add a tag…"
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-outline-variant text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-slate-50/50" />
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-outline-variant text-xs focus:outline-none focus:ring-2 focus:ring-foreground/15 focus:border-foreground/40 transition-all bg-surface-low/60" />
                 <button onClick={addTag} disabled={!tagInput.trim()}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-200/60 hover:bg-indigo-100 disabled:opacity-40 transition-colors">
+                  className="px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-semibold hover:opacity-80 disabled:opacity-40 transition-opacity">
                   + Add
                 </button>
               </div>
@@ -504,7 +576,7 @@ export default function Home() {
               className="w-full py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
               {runStatus === 'running'
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing {validRows.length} companies...</>
-                : <><Zap className="w-4 h-4" /> Run Analysis →</>}
+                : <>Run Analysis →</>}
             </button>
           </div>
         </div>
@@ -664,10 +736,11 @@ export default function Home() {
                             </span>
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <button onClick={() => setDecideTarget(r)}
-                              className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-foreground text-background hover:opacity-80 border border-transparent transition-all">
-                              + Pipeline
-                            </button>
+                            <PipelineButton
+                              company={r}
+                              campaignName={campaignName}
+                              product={product}
+                            />
                           </td>
                         </tr>
                       )
@@ -681,15 +754,6 @@ export default function Home() {
         </>
       </div>
 
-      {/* Success toast */}
-      {addedToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in">
-          <div className="flex items-center gap-3 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-semibold text-sm">
-            <CheckCircle className="w-4 h-4 shrink-0" />
-            <span><strong>{addedToast}</strong> added to Pipeline</span>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
