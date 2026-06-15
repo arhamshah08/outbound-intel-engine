@@ -36,7 +36,8 @@ export async function POST(req: Request) {
               const result = await enrichCompany(
                 key,
                 { product, domain: company.website },
-                (message: string) => send({ type: 'progress', company: key, message }),
+                (step: string, message: string, iteration?: number) =>
+                  send({ type: 'progress', company: key, step, message, iteration: iteration ?? 1 }),
               )
               send({ type: 'result', company: key, data: result })
             } catch (err) {

@@ -34,11 +34,18 @@ export interface Contact {
 }
 
 export interface CallBrief {
+  // Call
   openWith: string
   referenceOnCall: { point: string; url: string }[]
-  stillMissing: { item: string; where: string }[]
-  personalizedFirstLine: string
+  // Email
   emailSubjectLine: string
+  personalizedFirstLine: string
+  emailBody?: string
+  // LinkedIn
+  linkedinDM?: string
+  linkedinConnectionNote?: string
+  // Meta
+  stillMissing: { item: string; where: string }[]
   painPoints: PainPoint[]
   researchLinks: string[]
 }

@@ -34,7 +34,7 @@ const PAIN_SCHEMA = {
   },
 }
 
-type OnProgress = (msg: string) => void
+type OnProgress = (step: string, message: string, iteration?: number) => void
 
 export async function enrichCompany(
   input: string,
@@ -51,7 +51,7 @@ export async function enrichCompany(
   }
 
   // ── ITERATION 1: Broad discovery ──────────────────────────────────────────
-  onProgress('Iteration 1 — Discovering company...')
+  onProgress('discover', 'Querying Exa · Company overview + pain points + contacts', 1)
 
   const [discoveryResults, painResults, contactResults] = await Promise.all([
     exaDeep(
@@ -69,6 +69,8 @@ export async function enrichCompany(
     exaSearch(`${input} leadership team executives COO CMO VP Operations site:linkedin.com`, 3)
       .catch(() => []),
   ])
+
+  onProgress('enrich', 'Processing signals · Building intelligence profile', 1)
 
   const co = discoveryResults.structured as Record<string, string>
   const pn = painResults.structured as Record<string, string>
@@ -110,7 +112,7 @@ export async function enrichCompany(
   const hasPainPoints = inputData.filter(d => d.type === 'Pain Point').length >= 2
 
   if (!hasEmail || !hasPainPoints) {
-    onProgress('Iteration 2 — Filling gaps...')
+    onProgress('contacts', 'Finding decision-makers via Apollo + LinkedIn', 2)
 
     // Try Apollo for email (primary contact source)
     const apolloContacts = await apolloSearch(domain, 'Chief Operating Officer').catch(() => [])
@@ -143,7 +145,7 @@ export async function enrichCompany(
   // ── ITERATION 3: Targeted deep-dive on best available source ───────────────
   const lowConfidence = inputData.filter(d => d.confidence === 'Low' && !d.gap)
   if (lowConfidence.length > 0) {
-    onProgress('Iteration 3 — Deep-diving low-confidence signals...')
+    onProgress('deep-dive', 'Targeted research · Filling confidence gaps', 3)
     const extraResults = await exaSearch(`${name} ${domain} funding news site:techcrunch.com OR site:crunchbase.com`)
     for (const r of extraResults.slice(0, 2)) {
       if (r.highlights?.[0]) {
@@ -161,7 +163,7 @@ export async function enrichCompany(
   }
 
   // ── SCORING ────────────────────────────────────────────────────────────────
-  onProgress('Scoring with AI...')
+  onProgress('scoring', 'Gemini AI · 6-dimension scoring')
 
   const partial: Partial<CompanyResult> = {
     name, domain, industry,

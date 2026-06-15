@@ -100,7 +100,7 @@ export async function generateBrief(
   const painPoints = company.inputData?.filter(d => d.type === 'Pain Point') ?? []
   const signals = company.inputData?.filter(d => d.type === 'Buying Signal') ?? []
 
-  const prompt = `You are a world-class B2B sales coach. Write a pre-call brief for a healthcare sales rep.
+  const prompt = `You are a world-class B2B sales coach. Generate personalized outreach content for 3 channels.
 
 PRODUCT: ${product || 'Healthcare workflow automation platform'}
 COMPANY: ${company.name} (${company.domain})
@@ -109,22 +109,25 @@ PAIN POINTS: ${painPoints.map(p => p.value).join(' | ')}
 BUYING SIGNALS: ${signals.map(s => s.value).join(' | ')}
 SCORE: ${company.score?.total}/100 — ${company.score?.status}
 
-Return ONLY valid JSON:
+Return ONLY valid JSON (no markdown):
 {
-  "openWith": "One sentence to open the call that references something specific and real about them",
+  "openWith": "Cold call opener — one sentence, references something specific and real about this company, creates instant relevance",
   "referenceOnCall": [
-    { "point": "specific thing to mention", "url": "source url" },
-    { "point": "specific thing to mention", "url": "source url" }
+    { "point": "specific talking point for the call", "url": "source url" },
+    { "point": "specific talking point", "url": "source url" }
   ],
+  "emailSubjectLine": "Email subject — under 8 words, specific to their situation, not generic",
+  "personalizedFirstLine": "Email first line — under 25 words, references a real signal, conversational",
+  "emailBody": "Full 3-paragraph cold email. Para 1 (2 sentences): hook that references their specific situation from pain points/signals. Para 2 (2 sentences): concise value prop for this exact account type. Para 3 (1 sentence): low-friction CTA asking for a 15-min call. Total under 130 words.",
+  "linkedinDM": "LinkedIn DM — under 200 characters, warm and specific, references one real thing about them, opens a conversation without pitching",
+  "linkedinConnectionNote": "Connection request note — under 100 characters, personalized, no pitch",
   "stillMissing": [
     { "item": "what is still missing", "where": "where to find it" }
   ],
-  "personalizedFirstLine": "Email first line — specific, warm, references real signal, under 25 words",
-  "emailSubjectLine": "Short compelling subject line under 8 words",
   "painPoints": [
     { "pain": "specific pain point", "source_url": "url", "relevance": "direct or indirect" }
   ],
-  "researchLinks": ["url1", "url2", "url3"]
+  "researchLinks": ["url1", "url2"]
 }`
 
   const raw = await generate(prompt)
