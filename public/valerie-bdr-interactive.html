@@ -168,6 +168,30 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
 .question-num{font-size:36px;font-weight:900;color:#111;letter-spacing:-0.04em;margin-bottom:8px;}
 .question-text{font-size:15px;color:#333;line-height:1.65;}
 .hidden{display:none!important;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.main-enter{animation:fadeUp 0.28s ease;}
+.progress-bar{display:flex;align-items:center;gap:6px;}
+.progress-dot{width:8px;height:8px;border-radius:50%;background:#DDD9D2;transition:background 0.2s,transform 0.2s;cursor:pointer;border:none;padding:0;}
+.progress-dot.active{background:#111;transform:scale(1.15);}
+.progress-dot.done{background:#16A34A;}
+.progress-label{font-size:11px;font-weight:700;color:#999;letter-spacing:0.06em;margin-right:4px;}
+.presenter-hint{background:#FFF;border:1px solid #E8E4DE;border-left:3px solid #111;border-radius:12px;padding:14px 18px;margin-bottom:28px;font-size:14px;color:#555;line-height:1.55;}
+.presenter-hint strong{color:#111;}
+.walkthrough{background:#111;border-radius:20px;padding:28px 32px;margin-top:40px;color:#AAA;}
+.walkthrough h3{color:#FFF;font-size:17px;font-weight:700;margin-bottom:14px;letter-spacing:-0.02em;}
+.walkthrough ol{padding-left:20px;display:flex;flex-direction:column;gap:10px;}
+.walkthrough li{font-size:14px;line-height:1.55;color:#CCC;}
+.walkthrough li strong{color:#FFF;}
+.walkthrough kbd{background:#333;border-radius:6px;padding:2px 7px;font-size:11px;color:#FFF;font-family:inherit;}
+.help-overlay{position:fixed;inset:0;background:rgba(17,17,17,0.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;}
+.help-panel{background:#FFF;border-radius:20px;padding:32px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);}
+.help-panel h3{font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-0.02em;}
+.help-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F0EDE8;font-size:14px;}
+.help-row:last-child{border-bottom:none;}
+.help-row kbd{background:#F0EDE8;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;}
+.help-close{margin-top:20px;width:100%;background:#111;color:#FFF;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-icon{background:#FFF;border:1px solid #DDD9D2;border-radius:999px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:#555;transition:background 0.15s;}
+.btn-icon:hover{background:#F5F2EC;}
 @media(max-width:900px){
   .header{padding:0 20px;flex-wrap:wrap;height:auto;min-height:56px;padding-top:10px;padding-bottom:10px;}
   .header-meta{display:none;}
@@ -208,6 +232,7 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
 <div class="app">
   <header class="header" id="header"></header>
   <main class="main" id="main"></main>
+  <div id="help-overlay" class="help-overlay hidden"></div>
 </div>
 <script>
 (function(){
@@ -275,7 +300,18 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
     buyerScores: [null, null, null, null, null],
     currentTools: [],
     countUpValue: null,
+    showHelp: false,
   };
+
+  const walkthrough = [
+    { section:'methodology', text:'Explain your <strong>5-criteria scoring framework</strong> (30/25/20/15/10%)' },
+    { section:'prioritization', text:'Show <strong>5 accounts ranked</strong> — call out the 2 health-system DQs' },
+    { section:'target', text:'Make the case for <strong>Elevate ENT</strong> as #1 target (95/100)' },
+    { section:'buyers', text:'Click <strong>Run Score Analysis</strong>, then open Amy Verlsteffen' },
+    { section:'campaign', text:'Click <strong>Day 1</strong> → show A/B email variants + copy button' },
+    { section:'metrics', text:'Walk through <strong>A/B hypotheses</strong> and funnel metrics' },
+    { section:'tools', text:'Close with your <strong>stack + 4 questions</strong> for Valerie' },
+  ];
 
   let timers = [];
 
@@ -299,6 +335,19 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
 
   function goToSection(id) {
     setState({ view:id, activeBuyer:null, activeCampaignDay:null, activeCampaignMsg:0 });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleHelp() {
+    setState({ showHelp: !state.showHelp });
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
   }
 
   function goPrev() {
@@ -375,16 +424,27 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
     const idx = sectionData.findIndex(s => s.id === v);
     const prevSect = idx > 0 ? sectionData[idx - 1] : null;
     const nextSect = idx >= 0 && idx < sectionData.length - 1 ? sectionData[idx + 1] : null;
+    const progressDots = showBack ? (
+      '<div class="progress-bar" aria-label="Section progress">' +
+        '<span class="progress-label">' + esc(sectionData[idx].num) + '</span>' +
+        sectionData.map((s, i) =>
+          '<button class="progress-dot' + (i === idx ? ' active' : (i < idx ? ' done' : '')) + '" data-goto="' + s.id + '" title="' + esc(s.title) + '" aria-label="' + esc(s.title) + '"></button>'
+        ).join('') +
+      '</div>'
+    ) : '';
     document.getElementById('header').innerHTML =
       '<div class="header-left">' +
         (showBack ? '<button class="btn-pill" id="btn-back">← Overview</button>' : '') +
         '<span class="header-title">Valerie — BDR Assignment</span>' +
+        progressDots +
       '</div>' +
       '<div class="header-right">' +
         (showBack ? (
           (prevSect ? '<button class="btn-pill btn-pill-sm" id="btn-prev">← ' + esc(prevSect.num) + '</button>' : '') +
           (nextSect ? '<button class="btn-pill btn-pill-sm" id="btn-next">' + esc(nextSect.num) + ' →</button>' : '')
         ) : '') +
+        '<button class="btn-icon" id="btn-help" title="Keyboard shortcuts (?)">?</button>' +
+        '<button class="btn-icon" id="btn-fs" title="Fullscreen">⛶</button>' +
         '<span class="header-meta">Prepared by Pushti · June 2026</span>' +
       '</div>';
     const back = document.getElementById('btn-back');
@@ -393,12 +453,43 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
     if (prev) prev.onclick = goPrev;
     const next = document.getElementById('btn-next');
     if (next) next.onclick = goNext;
+    document.getElementById('btn-help').onclick = toggleHelp;
+    document.getElementById('btn-fs').onclick = toggleFullscreen;
+    document.querySelectorAll('[data-goto]').forEach(el => {
+      el.onclick = () => goToSection(el.getAttribute('data-goto'));
+    });
+  }
+
+  function renderHelp() {
+    const overlay = document.getElementById('help-overlay');
+    if (!state.showHelp) {
+      overlay.classList.add('hidden');
+      overlay.innerHTML = '';
+      return;
+    }
+    overlay.classList.remove('hidden');
+    overlay.innerHTML =
+      '<div class="help-panel" role="dialog" aria-label="Keyboard shortcuts">' +
+        '<h3>Presenter shortcuts</h3>' +
+        [
+          ['← →', 'Previous / next section'],
+          ['Esc', 'Back to overview'],
+          ['?', 'Toggle this panel'],
+          ['Click cards', 'Navigate sections'],
+          ['Section 04', 'Run Score Analysis → click buyer'],
+          ['Section 05', 'Click day node → A/B tabs → Copy'],
+        ].map(([k, d]) => '<div class="help-row"><span>' + d + '</span><kbd>' + k + '</kbd></div>').join('') +
+        '<button class="help-close" id="help-close">Got it</button>' +
+      '</div>';
+    overlay.onclick = e => { if (e.target === overlay) toggleHelp(); };
+    document.getElementById('help-close').onclick = toggleHelp;
   }
 
   function renderOverview() {
     return '<div class="overview">' +
       '<h1>Account Prioritization &amp; Outbound Campaign</h1>' +
       '<p>A go-to-market exercise for Valerie — scored five accounts, selected the best fit, mapped the buying committee, and built a full 14-day outbound sequence.</p>' +
+      '<div class="presenter-hint"><strong>Interactive deck.</strong> Click any section below, or use <kbd style="background:#F0EDE8;border-radius:4px;padding:2px 6px;font-size:12px;">←</kbd> <kbd style="background:#F0EDE8;border-radius:4px;padding:2px 6px;font-size:12px;">→</kbd> to move through. Press <kbd style="background:#F0EDE8;border-radius:4px;padding:2px 6px;font-size:12px;">?</kbd> for shortcuts.</div>' +
       '<div class="section-cards">' +
         sectionData.map(s =>
           '<div class="section-card" data-section="' + s.id + '">' +
@@ -412,6 +503,11 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
           '</div>'
         ).join('') +
       '</div>' +
+      '<div class="walkthrough"><h3>Suggested 5-minute walkthrough</h3><ol>' +
+        walkthrough.map((w, i) =>
+          '<li data-section="' + w.section + '" style="cursor:pointer;"><strong>' + (i+1) + '.</strong> ' + w.text + ' <span style="color:#666;">→</span></li>'
+        ).join('') +
+      '</ol></div>' +
     '</div>';
   }
 
@@ -498,6 +594,7 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
 
     let html = '<div class="section-wrap">' +
       '<div class="section-head"><span class="section-num">04</span><h2 class="section-title">Buyer Map</h2></div>' +
+      '<div class="presenter-hint"><strong>Demo this live:</strong> Click <em>Run Score Analysis</em> to show the enrichment animation, then click <strong>Amy Verlsteffen</strong> to open her outreach profile.</div>' +
       '<p class="section-lead" style="max-width:640px;margin-bottom:36px;">5 Director+ contacts at Elevate ENT. Run the AI score analysis to rank them by pain ownership, influence, and urgency — then click any contact to see their outreach profile.</p>' +
       '<div style="margin-bottom:28px;">' +
         '<button class="score-btn" id="score-btn"' + (isScoring ? ' disabled' : '') + '>' + esc(scoreBtnLabel) + '</button>';
@@ -591,6 +688,7 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
 
     let html = '<div class="section-wrap">' +
       '<div class="section-head"><span class="section-num">05</span><h2 class="section-title">14-Day Campaign</h2></div>' +
+      '<div class="presenter-hint"><strong>Demo this live:</strong> Click <strong>Day 1</strong> → switch between Formal (A) and Pattern Interrupt (B) → hit <em>Copy</em> to show ready-to-send outreach.</div>' +
       '<p class="section-lead" style="max-width:680px;margin-bottom:40px;">7 touchpoints, 2 message styles A/B tested. Hypothesis: <em style="color:#333;">as Elevate adds ENT practices, patient demand leaks before it becomes a booked appointment.</em> Click any day node to read the full message.</p>' +
       '<div class="timeline-wrap"><div class="timeline-line"></div><div class="timeline-nodes">' +
       dayData.map((d, i) => {
@@ -688,6 +786,9 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
     document.querySelectorAll('[data-section]').forEach(el => {
       el.onclick = () => goToSection(el.getAttribute('data-section'));
     });
+    document.querySelectorAll('.walkthrough li[data-section]').forEach(el => {
+      el.onclick = () => goToSection(el.getAttribute('data-section'));
+    });
     const scoreBtn = document.getElementById('score-btn');
     if (scoreBtn) scoreBtn.onclick = () => { if (state.scoringPhase !== 'running') startScoring(); };
     document.querySelectorAll('[data-buyer]').forEach(el => {
@@ -735,15 +836,21 @@ button{font-family:"DM Sans",system-ui,sans-serif;}
       case 'tools': content = renderTools(); break;
       default: content = renderOverview();
     }
-    main.innerHTML = content;
+    main.innerHTML = '<div class="main-enter">' + content + '</div>';
     bindEvents();
+    renderHelp();
   }
 
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key === 'Escape') { goBack(); e.preventDefault(); }
+    if (e.key === 'Escape') {
+      if (state.showHelp) toggleHelp();
+      else goBack();
+      e.preventDefault();
+    }
     else if (e.key === 'ArrowLeft') { goPrev(); e.preventDefault(); }
     else if (e.key === 'ArrowRight') { goNext(); e.preventDefault(); }
+    else if (e.key === '?' && !e.shiftKey) { toggleHelp(); e.preventDefault(); }
   });
 
   render();
