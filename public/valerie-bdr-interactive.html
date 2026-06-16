@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valerie Health — BDR Campaign Interactive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f8f7;
+      --bg-elevated: #ffffff;
+      --ink: #0f1a17;
+      --ink-muted: #5c6b66;
+      --ink-soft: #8a9691;
+      --border: #e2e8e5;
+      --accent: #0d6e5b;
+      --accent-light: #e8f5f1;
+      --accent-dark: #094d40;
+      --emerald: #059669;
+      --amber: #d97706;
+      --red: #dc2626;
+      --indigo: #4338ca;
+      --shadow: 0 1px 2px rgba(15, 26, 23, 0.04), 0 8px 24px rgba(15, 26, 23, 0.06);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font: "DM Sans", system-ui, sans-serif;
+      --serif: "Instrument Serif", Georgia, serif;
+      --nav-h: 64px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 24px); }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Top nav ── */
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-mark {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      display: grid; place-items: center;
+      color: white; font-weight: 700; font-size: 0.85rem;
+    }
+    .brand-text strong { display: block; font-size: 0.9rem; letter-spacing: -0.02em; }
+    .brand-text span { font-size: 0.72rem; color: var(--ink-muted); }
+    .nav-links { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    .nav-links a {
+      font-size: 0.78rem; font-weight: 600; color: var(--ink-muted);
+      text-decoration: none; padding: 0.45rem 0.75rem; border-radius: 999px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-light); color: var(--accent-dark); }
+
+    /* ── Layout ── */
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    section { margin-bottom: 3rem; scroll-margin-top: calc(var(--nav-h) + 16px); }
+    .section-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      letter-spacing: -0.03em; font-weight: 700; margin-bottom: 0.75rem;
+    }
+    .lede { color: var(--ink-muted); max-width: 62ch; font-size: 1.02rem; margin-bottom: 1.5rem; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, #0a3d34 0%, #0d6e5b 45%, #128f78 100%);
+      color: white; border-radius: calc(var(--radius) + 6px);
+      padding: clamp(2rem, 5vw, 3.5rem);
+      margin-bottom: 2.5rem;
+      position: relative; overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at 85% 15%, rgba(255,255,255,0.12), transparent 45%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; opacity: 0.85; margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1rem;
+    }
+    .hero p { opacity: 0.9; max-width: 52ch; font-size: 1.05rem; margin-bottom: 1.75rem; }
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem; margin-top: 1.5rem;
+    }
+    .hero-stat {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: var(--radius-sm); padding: 1rem;
+    }
+    .hero-stat strong { display: block; font-size: 1.5rem; font-weight: 700; }
+    .hero-stat span { font-size: 0.78rem; opacity: 0.8; }
+
+    /* ── Cards & grids ── */
+    .card {
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem 1.35rem;
+      box-shadow: var(--shadow);
+    }
+    .grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .grid-3 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .grid-4 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+    /* ── Product pills ── */
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .pill {
+      font-size: 0.75rem; font-weight: 600; padding: 0.35rem 0.7rem;
+      border-radius: 999px; background: var(--accent-light); color: var(--accent-dark);
+      border: 1px solid #c5e6dc;
+    }
+    .pill.dq { background: #fef2f2; color: var(--red); border-color: #fecaca; }
+
+    /* ── Tab bar ── */
+    .tabs {
+      display: flex; gap: 0.35rem; flex-wrap: wrap;
+      margin-bottom: 1.25rem; padding: 0.35rem;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: 999px; width: fit-content;
+    }
+    .tab-btn {
+      border: none; background: transparent; cursor: pointer;
+      font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      color: var(--ink-muted); padding: 0.5rem 1rem; border-radius: 999px;
+      transition: all 0.15s;
+    }
+    .tab-btn.active { background: var(--accent); color: white; }
+    .tab-panel { display: none; animation: fadeIn 0.25s ease; }
+    .tab-panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* ── Pipeline steps ── */
+    .pipeline {
+      display: grid; gap: 0.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    .pipe-step {
+      position: relative; padding: 1rem; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--bg-elevated);
+    }
+    .pipe-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--ink); color: white;
+      font-size: 0.75rem; font-weight: 700;
+      display: grid; place-items: center; margin-bottom: 0.6rem;
+    }
+    .pipe-step h4 { font-size: 0.88rem; margin-bottom: 0.35rem; }
+    .pipe-step p { font-size: 0.78rem; color: var(--ink-muted); line-height: 1.45; }
+
+    /* ── Scoring bars ── */
+    .score-row { margin-bottom: 0.85rem; }
+    .score-meta {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 0.8rem; margin-bottom: 0.3rem;
+    }
+    .score-meta strong { font-weight: 600; }
+    .score-meta span { color: var(--ink-soft); font-size: 0.75rem; }
+    .bar-track {
+      height: 8px; background: #edf2ef; border-radius: 999px; overflow: hidden;
+    }
+    .bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+
+    /* ── Account table ── */
+    .filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .filter-btn {
+      border: 1px solid var(--border); background: white; cursor: pointer;
+      font-family: inherit; font-size: 0.75rem; font-weight: 600;
+      padding: 0.4rem 0.85rem; border-radius: 999px; color: var(--ink-muted);
+      transition: all 0.15s;
+    }
+    .filter-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
+    .accounts { display: flex; flex-direction: column; gap: 0.65rem; }
+    .account {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: white; overflow: hidden; transition: box-shadow 0.15s;
+    }
+    .account:hover { box-shadow: var(--shadow); }
+    .account-header {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 1rem; align-items: center; padding: 1rem 1.15rem;
+      cursor: pointer; user-select: none;
+    }
+    .account-header h3 { font-size: 0.95rem; font-weight: 700; }
+    .account-header .sub { font-size: 0.78rem; color: var(--ink-muted); margin-top: 0.15rem; }
+    .score-badge {
+      font-size: 1.1rem; font-weight: 800; min-width: 3rem; text-align: right;
+    }
+    .status-badge {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+      padding: 0.35rem 0.65rem; border-radius: 999px; white-space: nowrap;
+    }
+    .status-call { background: #d1fae5; color: #065f46; }
+    .status-seq { background: #fef3c7; color: #92400e; }
+    .status-dq { background: #fee2e2; color: #991b1b; }
+    .account-body {
+      display: none; padding: 0 1.15rem 1.15rem;
+      border-top: 1px solid var(--border);
+    }
+    .account.open .account-body { display: block; padding-top: 1rem; }
+    .account-chevron { transition: transform 0.2s; color: var(--ink-soft); }
+    .account.open .account-chevron { transform: rotate(180deg); }
+    .dim-grid { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 1rem 0; }
+    .dim-chip {
+      font-size: 0.75rem; padding: 0.5rem 0.65rem;
+      background: var(--bg); border-radius: 8px; border: 1px solid var(--border);
+    }
+    .dim-chip strong { color: var(--accent-dark); }
+    .contact-list { list-style: none; }
+    .contact-list li {
+      padding: 0.65rem 0; border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+    .contact-list li:last-child { border-bottom: none; }
+    .contact-list .rank { color: var(--accent); font-weight: 700; margin-right: 0.35rem; }
+
+    /* ── Timeline ── */
+    .timeline { display: flex; flex-direction: column; gap: 0.65rem; }
+    .tl-row {
+      display: grid; grid-template-columns: 56px 40px 1fr;
+      gap: 0.75rem; align-items: start;
+      padding: 0.85rem; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: white;
+    }
+    .tl-day {
+      background: var(--ink); color: white; border-radius: 10px;
+      text-align: center; padding: 0.4rem 0.25rem; line-height: 1.1;
+    }
+    .tl-day small { display: block; font-size: 0.55rem; opacity: 0.6; text-transform: uppercase; }
+    .tl-day strong { font-size: 1rem; }
+    .tl-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: grid; place-items: center; font-size: 1rem;
+    }
+    .tl-icon.email { background: #dbeafe; }
+    .tl-icon.phone { background: #d1fae5; }
+    .tl-icon.linkedin { background: #e0e7ff; }
+    .tl-content h4 { font-size: 0.88rem; margin-bottom: 0.2rem; }
+    .tl-content p { font-size: 0.78rem; color: var(--ink-muted); }
+    .tone-tag {
+      display: inline-block; font-size: 0.65rem; font-weight: 600;
+      padding: 0.15rem 0.45rem; border-radius: 999px; margin-right: 0.25rem;
+      background: #f1f5f4; color: var(--ink-muted);
+    }
+
+    /* ── Personas ── */
+    .persona {
+      border-width: 2px; border-style: solid; border-radius: var(--radius);
+      padding: 1.1rem; background: white; display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .persona h4 { font-size: 0.85rem; }
+    .persona ul { list-style: none; flex: 1; }
+    .persona li {
+      font-size: 0.78rem; color: var(--ink-muted); padding: 0.25rem 0 0.25rem 1rem;
+      position: relative;
+    }
+    .persona li::before {
+      content: ""; position: absolute; left: 0; top: 0.55rem;
+      width: 5px; height: 5px; border-radius: 50%;
+    }
+    .persona .cta {
+      font-size: 0.75rem; font-weight: 600; font-style: italic;
+      padding-top: 0.65rem; border-top: 1px solid var(--border);
+    }
+    .persona.blue { border-color: #bfdbfe; } .persona.blue li::before { background: #3b82f6; } .persona.blue .cta { color: #2563eb; }
+    .persona.green { border-color: #a7f3d0; } .persona.green li::before { background: #10b981; } .persona.green .cta { color: #059669; }
+    .persona.orange { border-color: #fed7aa; } .persona.orange li::before { background: #f97316; } .persona.orange .cta { color: #ea580c; }
+    .persona.purple { border-color: #ddd6fe; } .persona.purple li::before { background: #8b5cf6; } .persona.purple .cta { color: #7c3aed; }
+
+    /* ── Flowchart ── */
+    .flow-wrap {
+      background: #f8faf9; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem; overflow-x: auto;
+    }
+    .flow { min-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .flow-node {
+      padding: 0.65rem 1.25rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
+      text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .flow-node.start { background: var(--indigo); color: white; border-radius: 16px; }
+    .flow-node.dark { background: var(--ink); color: white; }
+    .flow-node.diamond-wrap { padding: 1rem 0; }
+    .flow-diamond {
+      width: 88px; height: 88px; background: #fffbeb; border: 2px solid #fbbf24;
+      transform: rotate(45deg); border-radius: 8px; margin: 0 auto;
+    }
+    .flow-diamond span {
+      display: block; transform: rotate(-45deg);
+      font-size: 0.7rem; font-weight: 700; color: #92400e;
+      padding: 1.35rem 0.5rem; text-align: center; line-height: 1.2;
+    }
+    .flow-connector { width: 2px; height: 18px; background: #d1ddd8; }
+    .flow-personas {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
+      width: 100%; margin: 0.5rem 0;
+    }
+    .flow-p-card {
+      font-size: 0.68rem; padding: 0.55rem; border-radius: 10px; border: 1px solid;
+      line-height: 1.35;
+    }
+    .flow-outcomes {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem;
+      width: 100%;
+    }
+    .flow-out {
+      font-size: 0.62rem; padding: 0.5rem; border-radius: 8px; border: 1px solid;
+      line-height: 1.3;
+    }
+    .flow-node.success { background: var(--emerald); color: white; border-radius: 16px; }
+
+    /* ── ML loops ── */
+    .loop-card { border-width: 2px; border-style: solid; border-radius: var(--radius); padding: 1rem; background: white; }
+    .loop-card h4 { font-size: 0.88rem; margin-bottom: 0.4rem; }
+    .loop-card p { font-size: 0.78rem; color: var(--ink-muted); margin-bottom: 0.6rem; }
+    .loop-example {
+      font-size: 0.72rem; font-style: italic; color: var(--ink-muted);
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.65rem;
+    }
+
+    /* ── Copy button ── */
+    .copy-row { display: flex; align-items: flex-start; gap: 0.5rem; margin-top: 0.5rem; }
+    .copy-btn {
+      border: 1px solid var(--border); background: white; cursor: pointer;
+      font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.6rem;
+      border-radius: 6px; color: var(--ink-muted); flex-shrink: 0;
+    }
+    .copy-btn.copied { background: var(--accent-light); color: var(--accent-dark); border-color: #a7d9c9; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center; padding: 2rem 1.5rem;
+      font-size: 0.75rem; color: var(--ink-soft);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .topnav { padding: 0 1rem; }
+      .nav-links { display: none; }
+      .account-header { grid-template-columns: 1fr auto; }
+      .account-header .score-badge { display: none; }
+      .flow-personas, .flow-outcomes { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media print {
+      .topnav, .tabs, .filter-bar, .copy-btn { display: none !important; }
+      .hero { break-inside: avoid; }
+      .account-body { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="brand">
+      <div class="brand-mark">VH</div>
+      <div class="brand-text">
+        <strong>Valerie Health</strong>
+        <span>BDR Campaign · PE Specialty Groups</span>
+      </div>
+    </div>
+    <div class="nav-links" id="navLinks">
+      <a href="#overview">Overview</a>
+      <a href="#product">Product</a>
+      <a href="#engine">Engine</a>
+      <a href="#accounts">Accounts</a>
+      <a href="#outreach">Outreach</a>
+      <a href="#system">System</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- HERO -->
+    <header class="hero" id="overview">
+      <div class="hero-inner">
+        <div class="hero-eyebrow">
+          <span>Go-to-Market Playbook</span>
+          <span>·</span>
+          <span>Interactive</span>
+        </div>
+        <h1>PE-Backed Specialty Groups Campaign</h1>
+        <p>
+          A disciplined outbound motion for Valerie Health — research PE-backed physician MSOs,
+          score accounts against ICP, and run a 14-day persona-driven sequence to book demos.
+        </p>
+        <div class="hero-stats">
+          <div class="hero-stat"><strong>5</strong><span>Target accounts in wave 1</span></div>
+          <div class="hero-stat"><strong>2</strong><span>CALL NOW priorities</span></div>
+          <div class="hero-stat"><strong>14</strong><span>Day outreach sequence</span></div>
+          <div class="hero-stat"><strong>4</strong><span>Buyer personas</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- PRODUCT -->
+    <section id="product">
+      <p class="section-label">What we sell</p>
+      <h2>Valerie Health — AI front office for specialty groups</h2>
+      <p class="lede">
+        Valerie automates referral management, fax/document processing, and patient scheduling
+        for independent and PE-backed physician groups. Embeds into existing EMRs in under 30 days —
+        no rip-and-replace.
+      </p>
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;">Three products → three outreach angles</h3>
+          <ul style="font-size:0.82rem;color:var(--ink-muted);padding-left:1.1rem;display:flex;flex-direction:column;gap:0.4rem;">
+            <li><strong style="color:var(--ink)">Referral Automation</strong> — capture, classify, extract, verify, sync to EMR</li>
+            <li><strong style="color:var(--ink)">Fax &amp; Document Automation</strong> — classify, parse, route hundreds of doc types</li>
+            <li><strong style="color:var(--ink)">Automated Scheduling</strong> — rules-based booking, less phone burden</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;">ICP &amp; hard disqualifiers</h3>
+          <div class="pill-row">
+            <span class="pill">PE-backed MSO</span>
+            <span class="pill">10–200 physicians</span>
+            <span class="pill">Specialty physician</span>
+            <span class="pill">Multi-site complexity</span>
+            <span class="pill dq">No hospital systems</span>
+            <span class="pill dq">No IDNs / AMCs</span>
+          </div>
+          <p style="font-size:0.78rem;color:var(--ink-muted);margin-top:0.75rem;">
+            Hospitals are DQ'd <em>before</em> scoring — 12–18 month procurement cycles and committee buying make them a poor fit regardless of size.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENGINE -->
+    <section id="engine">
+      <p class="section-label">Account intelligence</p>
+      <h2>Outbound Intelligence Engine</h2>
+      <p class="lede">Every account moves through research → classify → score → decide → outreach → feedback.</p>
+
+      <div class="pipeline" style="margin-bottom:2rem;">
+        <div class="pipe-step"><div class="pipe-num">1</div><h4>Research</h4><p>Exa crawl: company site, LinkedIn, PitchBook, news, pain signals.</p></div>
+        <div class="pipe-step"><div class="pipe-num">2</div><h4>Classify</h4><p>ICP filter first. Hospital/system → auto-DQ. MSO vs federation model.</p></div>
+        <div class="pipe-step"><div class="pipe-num">3</div><h4>Score</h4><p>6 dimensions, 100 pts. Deterministic LLM scoring with source verification.</p></div>
+        <div class="pipe-step"><div class="pipe-num">4</div><h4>Decide</h4><p>≥80 CALL NOW · 60–79 SEQUENCE · &lt;60 deprioritize · DQ filtered.</p></div>
+        <div class="pipe-step"><div class="pipe-num">5</div><h4>Outreach</h4><p>14-day multi-channel sequence with persona-specific angles.</p></div>
+        <div class="pipe-step"><div class="pipe-num">6</div><h4>Feedback</h4><p>Score corrections, call outcomes, FAQ thumbs → calibration loops.</p></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="font-size:0.9rem;margin-bottom:1rem;">Scoring dimensions (100 pts)</h3>
+          <div id="scoreBars"></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:0.9rem;margin-bottom:1rem;">ICP signal weights</h3>
+          <div id="signalBars"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCOUNTS -->
+    <section id="accounts">
+      <p class="section-label">Wave 1 targets</p>
+      <h2>Account scorecard</h2>
+      <p class="lede">Click any account to expand dimensions, evidence, and ranked contacts.</p>
+
+      <div class="filter-bar" id="accountFilters">
+        <button class="filter-btn active" data-filter="ALL">All (5)</button>
+        <button class="filter-btn" data-filter="CALL NOW">Call Now (2)</button>
+        <button class="filter-btn" data-filter="SEQUENCE">Sequence (1)</button>
+        <button class="filter-btn" data-filter="DISQUALIFIED">Disqualified (2)</button>
+      </div>
+
+      <div class="accounts" id="accountList"></div>
+    </section>
+
+    <!-- OUTREACH -->
+    <section id="outreach">
+      <p class="section-label">Execution</p>
+      <h2>14-day campaign workflow</h2>
+
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="sequence">Sequence</button>
+        <button class="tab-btn" data-tab="personas">Personas</button>
+        <button class="tab-btn" data-tab="workflow">Dynamic workflow</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-sequence">
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <div class="tab-panel" id="tab-personas">
+        <div class="grid-4" id="personaGrid"></div>
+      </div>
+
+      <div class="tab-panel" id="tab-workflow">
+        <div class="flow-wrap">
+          <div class="flow" id="flowchart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SYSTEM -->
+    <section id="system">
+      <p class="section-label">Continuous improvement</p>
+      <h2>ML reinforcement loops</h2>
+      <p class="lede">Every BDR interaction is a training signal. The engine improves with each cycle.</p>
+      <div class="grid-2" id="mlLoops"></div>
+    </section>
+
+  </div>
+
+  <footer>
+    Valerie Health · PE Specialty Groups GTM · Built for BDR interview presentation
+  </footer>
+
+  <script>
+    const DIMENSIONS = [
+      { name: 'ICP Fit', weight: 30, color: '#10b981' },
+      { name: 'Workflow Pain', weight: 20, color: '#f59e0b' },
+      { name: 'Scale / Complexity', weight: 15, color: '#6366f1' },
+      { name: 'Buying Committee', weight: 15, color: '#3b82f6' },
+      { name: 'Growth Pressure', weight: 10, color: '#8b5cf6' },
+      { name: 'Messaging Fit', weight: 10, color: '#ec4899' },
+    ];
+
+    const SIGNALS = [
+      { name: 'Not hospital / health system', score: 15 },
+      { name: 'PE-backed', score: 12 },
+      { name: 'Target specialty match', score: 11 },
+      { name: 'Multi-location', score: 9 },
+      { name: 'Named COO / ops leader', score: 8 },
+      { name: 'Headcount 50–500', score: 8 },
+      { name: 'Recent funding / M&A', score: 7 },
+    ];
+
+    const ACCOUNTS = [
+      {
+        name: 'Elevate ENT Partners',
+        domain: 'elevateent.com',
+        industry: 'ENT / Specialty MSO',
+        pe: 'Audax Private Equity',
+        scale: '170+ physicians · 110+ locations · TX, FL, LA',
+        score: 96,
+        status: 'CALL NOW',
+        summary: 'Textbook ICP. Active M&A creates recurring front-office standardization pain. Named buying committee maps 1:1 to Valerie products.',
+        dimensions: [
+          ['ICP Fit', 29, 30], ['Workflow Pain', 18, 20], ['Scale', 14, 15],
+          ['Buying Committee', 15, 15], ['Growth Pressure', 10, 10], ['Messaging', 10, 10],
+        ],
+        contacts: [
+          { rank: 1, name: 'Amy Verlsteffen', title: 'VP Patient Access / Ops (FL)', hook: 'Owns scheduling + contact centers — exact Valerie workflows.' },
+          { rank: 2, name: 'Michael Amerstein', title: 'COO', hook: 'Executive sponsor for front-office standardization across 110 sites.' },
+          { rank: 3, name: 'Corie Opdyke', title: 'VP Integration & Transformation', hook: 'Sees every broken process when a practice joins.' },
+          { rank: 4, name: 'Sylvain Foster', title: 'CFO', hook: 'Economic buyer — labor cost scales with locations.' },
+          { rank: 5, name: 'Cliff Hogan', title: 'CIO', hook: 'Technical gatekeeper — EMR overlay, not rip-and-replace.' },
+        ],
+      },
+      {
+        name: 'The US Oncology Network',
+        domain: 'usoncology.com',
+        industry: 'Oncology / Independent Practice Network',
+        pe: 'McKesson Corporation',
+        scale: '2,500+ providers · 600+ sites · ~31 states',
+        score: 81,
+        status: 'CALL NOW',
+        summary: 'Maximum workflow pain (fax, prior auth, referrals) but murky decision path — McKesson central vs practice-level. Target Texas Oncology first.',
+        dimensions: [
+          ['ICP Fit', 24, 30], ['Workflow Pain', 19, 20], ['Scale', 15, 15],
+          ['Buying Committee', 7, 15], ['Growth Pressure', 9, 10], ['Messaging', 7, 10],
+        ],
+        contacts: [
+          { rank: 1, name: 'Network Development (verify)', title: 'VP Network Development', hook: 'Entry for practice onboarding — redirect to large affiliate.' },
+          { rank: 2, name: 'Practice Operations (verify)', title: 'VP Practice Operations', hook: 'Workflow pain felt at practice level — test account before network.' },
+        ],
+      },
+      {
+        name: 'Growth Orthopedics',
+        domain: 'growthorthopedics.com',
+        industry: 'Orthopedics / MSO',
+        pe: 'Trivest Partners',
+        scale: '8 practices · ~120 physicians · KY, TX',
+        score: 70,
+        status: 'SEQUENCE',
+        summary: 'Valid ICP type but explicitly decentralizes front/back office. Pursue only if model shifts toward centralization.',
+        dimensions: [
+          ['ICP Fit', 27, 30], ['Workflow Pain', 13, 20], ['Scale', 8, 15],
+          ['Buying Committee', 8, 15], ['Growth Pressure', 7, 10], ['Messaging', 7, 10],
+        ],
+        contacts: [
+          { rank: 1, name: 'Peter McCann', title: 'CEO', hook: 'Built federation model — would need to centralize to use Valerie.' },
+        ],
+      },
+      {
+        name: 'Baylor Scott & White Health',
+        domain: 'bswhealth.com',
+        industry: 'Health System / Hospital Network',
+        pe: 'Nonprofit',
+        scale: '50+ hospitals · 50,000+ employees',
+        score: 0,
+        status: 'DISQUALIFIED',
+        summary: 'Nonprofit hospital health system. Hard ICP violation — eliminated before scoring.',
+        dimensions: [],
+        contacts: [],
+      },
+      {
+        name: 'Sutter Health',
+        domain: 'sutterhealth.org',
+        industry: 'Health System / Hospital Network',
+        pe: 'Nonprofit',
+        scale: '24–27 hospitals · Northern California',
+        score: 0,
+        status: 'DISQUALIFIED',
+        summary: 'Same hard DQ as Baylor — hospital systems excluded regardless of size.',
+        dimensions: [],
+        contacts: [],
+      },
+    ];
+
+    const TIMELINE = [
+      { day: 1, channel: 'email', touch: 'Intro Email A/B Test', tones: ['formal', 'informal'], goal: 'Start conversation with relevance' },
+      { day: 3, channel: 'phone', touch: 'Call + Voicemail', tones: ['conversational'], goal: 'Add human touch, ask 1 key question' },
+      { day: 5, channel: 'email', touch: 'Follow-up Email (Business Cost)', tones: ['formal', 'informal'], goal: 'Quantify the hidden cost' },
+      { day: 8, channel: 'linkedin', touch: 'LinkedIn Message', tones: ['conversational'], goal: 'Soft question, not a pitch' },
+      { day: 10, channel: 'phone', touch: 'Call + Voicemail', tones: ['conversational'], goal: 'Try to connect live' },
+      { day: 12, channel: 'email', touch: 'Peer Pattern Email', tones: ['formal', 'informal'], goal: 'Share peer insight + value' },
+      { day: 14, channel: 'email', touch: 'Breakup / Close Loop', tones: ['formal'], goal: 'Close respectfully, leave door open' },
+    ];
+
+    const PERSONAS = [
+      { color: 'blue', title: 'COO / Ops / Integration', points: ['New practice onboarding', 'Workflow standardization', 'Site-level inconsistency', 'Reduce manual work'], cta: 'Show where intake breaks during integration' },
+      { color: 'green', title: 'CFO / Finance', points: ['Labor cost', 'Missed booked visits', 'Margin protection', 'Cost of unworked referrals'], cta: 'Walk you through the patient-loss math' },
+      { color: 'orange', title: 'Patient Access / Rev Cycle', points: ['Referral queues', 'Fax processing', 'Call-back speed', 'Appointment conversion'], cta: 'Compare notes on where referrals slow down' },
+      { color: 'purple', title: 'CEO / President', points: ['Scaling the platform', 'Protect growth from ops drag', 'Independent-practice success', 'Acquisition integration'], cta: 'Show how front-office automation supports scale' },
+    ];
+
+    const ML_LOOPS = [
+      { color: '#10b981', title: 'Score Corrections', desc: 'BDR adjusts dimension scores in pipeline. Delta saved as training signal.', example: 'Lowering Buying Committee 15→10 for decision-fragmentation teaches the model to score similar accounts lower.' },
+      { color: '#3b82f6', title: 'Call Outcomes', desc: 'Picked up / No answer / Voicemail / Wrong person — logged per contact per day.', example: 'Which sequence day has highest pickup? Which persona answers? Feed into call timing.' },
+      { color: '#f59e0b', title: 'FAQ Effectiveness', desc: 'Playbook objection responses rated worked/didn\'t after each call.', example: 'High-thumbs answers surface first. Low-thumbs get flagged for revision.' },
+      { color: '#8b5cf6', title: 'Engagement Signals', desc: 'Email opens, LinkedIn accepts, reply persona — refine persona-priority logic.', example: 'If Patient Access replies 2× more than CEO across 50 touches, re-rank persona priority.' },
+    ];
+
+    const FLOW_PERSONAS = [
+      { title: 'COO / Ops', sub: 'Integration', angle: 'New-site intake standardization', bg: '#eff6ff', accent: '#3b82f6' },
+      { title: 'CFO', sub: 'Revenue Cycle', angle: 'Missed visits + labor leverage', bg: '#f0fdf4', accent: '#10b981' },
+      { title: 'Patient Access', sub: 'Rev Cycle', angle: 'Referrals, faxes, scheduling', bg: '#fff7ed', accent: '#f97316' },
+      { title: 'CEO', sub: 'Executive', angle: 'Scale without admin drag', bg: '#faf5ff', accent: '#8b5cf6' },
+    ];
+
+    const FLOW_OUTCOMES = [
+      { signal: 'Opened, No Reply', action: 'Day 5 — Pattern interrupt', bg: '#f8fafc', border: '#e2e8f0' },
+      { signal: 'No Open', action: 'Cleaner operational subject', bg: '#fffbeb', border: '#fde68a' },
+      { signal: 'LinkedIn Accepted', action: 'Soft question — no pitch', bg: '#eff6ff', border: '#bfdbfe' },
+      { signal: 'Call Connected', action: 'Run discovery opener', bg: '#ecfdf5', border: '#a7f3d0' },
+      { signal: 'Wrong Person', action: 'Find owner + restart', bg: '#f1f5f9', border: '#cbd5e1' },
+    ];
+
+    function statusClass(s) {
+      if (s === 'CALL NOW') return 'status-call';
+      if (s === 'SEQUENCE') return 'status-seq';
+      return 'status-dq';
+    }
+
+    function renderBars(containerId, items, valueKey, maxKey) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = items.map(item => {
+        const val = item[valueKey];
+        const max = maxKey ? item[maxKey] : Math.max(...items.map(i => i[valueKey]));
+        const pct = (val / max) * 100;
+        const color = item.color || '#0d6e5b';
+        return `<div class="score-row">
+          <div class="score-meta"><strong>${item.name}</strong><span>${val}${maxKey ? '' : ' pts'}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderAccounts(filter = 'ALL') {
+      const list = document.getElementById('accountList');
+      const filtered = filter === 'ALL' ? ACCOUNTS : ACCOUNTS.filter(a => a.status === filter);
+      list.innerHTML = filtered.map((a, i) => `
+        <article class="account" data-status="${a.status}">
+          <div class="account-header" onclick="toggleAccount(${i})" role="button" aria-expanded="false">
+            <div>
+              <h3>${a.name}</h3>
+              <p class="sub">${a.industry} · ${a.pe} · ${a.scale}</p>
+            </div>
+            <span class="score-badge" style="color:${a.score >= 80 ? 'var(--emerald)' : a.score >= 60 ? 'var(--amber)' : 'var(--red)'}">${a.score}</span>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span class="status-badge ${statusClass(a.status)}">${a.status}</span>
+              <span class="account-chevron">▼</span>
+            </div>
+          </div>
+          <div class="account-body">
+            <p style="font-size:0.82rem;color:var(--ink-muted);margin-bottom:0.75rem;">${a.summary}</p>
+            ${a.dimensions.length ? `<div class="dim-grid">${a.dimensions.map(([n,s,m]) =>
+              `<div class="dim-chip"><strong>${s}/${m}</strong> ${n}</div>`).join('')}</div>` : ''}
+            ${a.contacts.length ? `<h4 style="font-size:0.8rem;margin-bottom:0.5rem;">Ranked contacts</h4>
+              <ul class="contact-list">${a.contacts.map(c => `
+                <li><span class="rank">#${c.rank}</span><strong>${c.name}</strong> — ${c.title}<br>
+                <span style="color:var(--ink-muted)">${c.hook}</span>
+                <div class="copy-row"><button class="copy-btn" onclick="copyText(event,'${c.hook.replace(/'/g,"\\'")}')">Copy hook</button></div></li>`).join('')}</ul>` : ''}
+          </div>
+        </article>
+      `).join('');
+      window._filteredAccounts = filtered;
+    }
+
+    function toggleAccount(i) {
+      const cards = document.querySelectorAll('.account');
+      const card = cards[i];
+      const open = card.classList.toggle('open');
+      card.querySelector('.account-header').setAttribute('aria-expanded', open);
+    }
+
+    function renderTimeline() {
+      const icons = { email: '✉️', phone: '📞', linkedin: 'in' };
+      document.getElementById('timeline').innerHTML = TIMELINE.map(t => `
+        <div class="tl-row">
+          <div class="tl-day"><small>Day</small><strong>${t.day}</strong></div>
+          <div class="tl-icon ${t.channel}">${icons[t.channel]}</div>
+          <div class="tl-content">
+            <h4>${t.touch}</h4>
+            <div>${t.tones.map(x => `<span class="tone-tag">${x}</span>`).join('')}</div>
+            <p>${t.goal}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPersonas() {
+      document.getElementById('personaGrid').innerHTML = PERSONAS.map(p => `
+        <div class="persona ${p.color}">
+          <h4>${p.title}</h4>
+          <ul>${p.points.map(pt => `<li>${pt}</li>`).join('')}</ul>
+          <p class="cta">"${p.cta}"</p>
+          <button class="copy-btn" onclick="copyText(event,'${p.cta.replace(/'/g,"\\'")}')">Copy CTA</button>
+        </div>
+      `).join('');
+    }
+
+    function renderFlowchart() {
+      document.getElementById('flowchart').innerHTML = `
+        <div class="flow-node start">Start: Target Account</div>
+        <div class="flow-connector"></div>
+        <div class="flow-node dark">Identify Persona</div>
+        <div class="flow-connector"></div>
+        <div class="flow-personas">${FLOW_PERSONAS.map(p => `
+          <div class="flow-p-card" style="background:${p.bg};border-color:${p.accent}44">
+            <strong style="color:${p.accent};font-size:0.7rem">${p.title}</strong><br>
+            <span style="color:#64748b">${p.sub}</span><br>${p.angle}
+          </div>`).join('')}</div>
+        <div class="flow-connector"></div>
+        <div class="flow-node dark">Day 1 — Email + LinkedIn</div>
+        <div class="flow-connector"></div>
+        <div class="flow-diamond"><span>Engagement<br>Signal?</span></div>
+        <div class="flow-connector"></div>
+        <div class="flow-outcomes">${FLOW_OUTCOMES.map(o => `
+          <div class="flow-out" style="background:${o.bg};border-color:${o.border}">
+            <strong>${o.signal}</strong><br>${o.action}
+          </div>`).join('')}</div>
+        <div class="flow-connector"></div>
+        <div class="flow-node" style="background:white;border:1px solid var(--border)">Days 8 → 10 → 12 → 14</div>
+        <div class="flow-connector"></div>
+        <div class="flow-node success">✓ Meeting Booked</div>
+      `;
+    }
+
+    function renderML() {
+      document.getElementById('mlLoops').innerHTML = ML_LOOPS.map(l => `
+        <div class="loop-card" style="border-color:${l.color}44">
+          <h4 style="color:${l.color}">${l.title}</h4>
+          <p>${l.desc}</p>
+          <div class="loop-example">${l.example}</div>
+        </div>
+      `).join('');
+    }
+
+    function copyText(e, text) {
+      e.stopPropagation();
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = e.target;
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = btn.dataset.orig || 'Copy'; btn.classList.remove('copied'); }, 1500);
+      });
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Account filters
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderAccounts(btn.dataset.filter);
+      });
+    });
+
+    // Scroll spy for nav
+    const sections = [...document.querySelectorAll('section, .hero')];
+    const navAnchors = [...document.querySelectorAll('.nav-links a')];
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          navAnchors.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    sections.forEach(s => { if (s.id) observer.observe(s); });
+
+    // Init
+    renderBars('scoreBars', DIMENSIONS, 'weight', 'weight');
+    renderBars('signalBars', SIGNALS, 'score', null);
+    renderAccounts();
+    renderTimeline();
+    renderPersonas();
+    renderFlowchart();
+    renderML();
+
+    // Animate bars on load
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.bar-fill').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0';
+        requestAnimationFrame(() => { bar.style.width = w; });
+      });
+    });
+  </script>
+</body>
+</html>
