@@ -428,6 +428,92 @@ function BriefTabs({ brief, onRegenerate, loading }: { brief: CallBrief | null |
   )
 }
 
+// ─── Sequence Tracker ────────────────────────────────────────────────────────
+
+const OUTREACH_SEQUENCE = [
+  { day: 1,  channel: 'email',    label: 'Day 1',  action: 'Intro email A/B test (pain-specific)' },
+  { day: 2,  channel: 'linkedin', label: 'Day 2',  action: 'LinkedIn profile view + connection (no pitch)' },
+  { day: 3,  channel: 'call',     label: 'Day 3',  action: 'Call + voicemail — ask 1 key question' },
+  { day: 5,  channel: 'email',    label: 'Day 5',  action: 'Value-add email — quantify hidden cost' },
+  { day: 7,  channel: 'linkedin', label: 'Day 7',  action: 'LinkedIn message — soft question, no pitch' },
+  { day: 9,  channel: 'call',     label: 'Day 9',  action: 'Call (no voicemail, vary time of day)' },
+  { day: 10, channel: 'email',    label: 'Day 10', action: 'Breakup email — close respectfully, leave door open' },
+]
+
+function SequenceTracker({ activities, createdAt }: { activities: Activity[]; createdAt: string }) {
+  const emailCount    = activities.filter(a => a.type === 'email').length
+  const callCount     = activities.filter(a => a.type === 'call').length
+  const linkedinCount = activities.filter(a => a.type === 'linkedin').length
+
+  // Map activity counts to completed sequence steps
+  const completedMask = [
+    emailCount    >= 1,  // Day 1 email
+    linkedinCount >= 1,  // Day 2 linkedin
+    callCount     >= 1,  // Day 3 call
+    emailCount    >= 2,  // Day 5 email
+    linkedinCount >= 2,  // Day 7 linkedin
+    callCount     >= 2,  // Day 9 call
+    emailCount    >= 3,  // Day 10 email
+  ]
+  const completedCount = completedMask.filter(Boolean).length
+  const nextStepIdx    = completedMask.findIndex(c => !c)
+  const nextStep       = nextStepIdx >= 0 ? OUTREACH_SEQUENCE[nextStepIdx] : null
+  const isComplete     = completedCount === OUTREACH_SEQUENCE.length
+
+  const lastActivity   = activities[0]
+  const sinceMs        = lastActivity
+    ? Date.now() - new Date(lastActivity.created_at).getTime()
+    : Date.now() - new Date(createdAt).getTime()
+  const daysSince      = Math.floor(sinceMs / 86_400_000)
+
+  const CHANNEL_COLOR: Record<string, string> = {
+    email:    'bg-blue-50 text-blue-700 border-blue-200',
+    call:     'bg-emerald-50 text-emerald-700 border-emerald-200',
+    linkedin: 'bg-sky-50 text-sky-700 border-sky-200',
+  }
+
+  return (
+    <div className="mt-2 flex items-center gap-2 flex-wrap">
+      {/* Step dots */}
+      <div className="flex items-center gap-1">
+        {OUTREACH_SEQUENCE.map((step, i) => {
+          const done   = completedMask[i]
+          const active = !done && i === nextStepIdx
+          return (
+            <div key={step.day}
+              title={`${step.label}: ${step.action}`}
+              className={cn('w-3.5 h-3.5 rounded-full border transition-all',
+                done   ? 'bg-emerald-500 border-emerald-500' :
+                active ? 'bg-primary border-primary animate-pulse' :
+                         'bg-white border-outline-variant'
+              )} />
+          )
+        })}
+      </div>
+
+      {/* Current status */}
+      {isComplete ? (
+        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+          Sequence complete
+        </span>
+      ) : nextStep ? (
+        <span className={cn('text-[10px] font-semibold border px-1.5 py-0.5 rounded', CHANNEL_COLOR[nextStep.channel] ?? 'bg-slate-50 text-slate-600 border-slate-200')}>
+          Next: {nextStep.label} {nextStep.channel}
+        </span>
+      ) : null}
+
+      {/* Days since last touch */}
+      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded border',
+        daysSince === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+        daysSince <= 2  ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                          'bg-red-50 text-red-600 border-red-200'
+      )}>
+        {daysSince === 0 ? 'Today' : `${daysSince}d ago`}
+      </span>
+    </div>
+  )
+}
+
 const EXPANDED_KEY = 'oie:pipelineExpanded:v1'
 
 function loadExpandedSet(): Set<string> {
@@ -548,6 +634,7 @@ function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: 
             <p className="text-xs text-on-surface-variant/80 mt-1.5 leading-relaxed line-clamp-2">{introLine}</p>
           )}
           {expanded && prospect.location && <span className="text-xs text-on-surface-variant/70">{prospect.location}</span>}
+          <SequenceTracker activities={activities} createdAt={prospect.created_at} />
         </div>
         <div className="flex items-start gap-2 shrink-0">
           <div className="text-right">

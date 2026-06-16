@@ -3,6 +3,7 @@ import {
   SearchIcon,
   FlaskConicalIcon,
   HistoryIcon,
+  NetworkIcon,
   HelpCircleIcon,
   SettingsIcon,
 } from "lucide-react";
@@ -37,6 +38,11 @@ export const navGroups: SidebarNavGroup[] = [
         title: "History",
         path: "/history",
         icon: <HistoryIcon />,
+      },
+      {
+        title: "Architecture",
+        path: "/architecture",
+        icon: <NetworkIcon />,
       },
     ],
   },

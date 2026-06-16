@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import type { CompanyResult } from '@/lib/types'
 import { supabase }    from '@/lib/supabase'
 import { getCached, setCached, clearCachedFor } from '@/lib/scoreCache'
+import { DEMO_RESULTS, DEMO_MODE_KEY } from '@/lib/demoData'
 import DatabaseSetup   from '@/components/DatabaseSetup'
 import NetworkHero     from '@/components/NetworkHero'
 import { ScoreDistributionChart } from '@/components/PerformanceChart'
@@ -402,6 +403,10 @@ export default function Home() {
   const [overrides, setOverrides] = useState<Record<string, Record<string, string>>>({})
   const [editingChip, setEditingChip] = useState<{ company: string; field: string } | null>(null)
   const [chipDraft, setChipDraft] = useState('')
+  const [demoMode, setDemoMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem(DEMO_MODE_KEY) === 'true'
+  })
   const resultsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -419,6 +424,7 @@ export default function Home() {
   useEffect(() => { localStorage.setItem('vhCampaign', campaignName) }, [campaignName])
   useEffect(() => { localStorage.setItem('vhProduct', product) }, [product])
   useEffect(() => { localStorage.setItem('vhTags', JSON.stringify(icpTags)) }, [icpTags])
+  useEffect(() => { localStorage.setItem(DEMO_MODE_KEY, String(demoMode)) }, [demoMode])
 
   const validRows = rows.filter(r => r.name.trim())
 
@@ -470,6 +476,16 @@ export default function Home() {
     setRunStatus('running')
     setProgress({})
     setFilter('ALL')
+
+    // Demo mode: skip API, show hardcoded results immediately
+    if (demoMode && !opts.forceRows?.length) {
+      setAnalyzingList([])
+      await new Promise<void>(r => setTimeout(r, 600)) // brief pause for UX
+      setResults([...DEMO_RESULTS].sort((a, b) => b.score.total - a.score.total))
+      setRunStatus('done')
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 300)
+      return
+    }
 
     // Check cache per company. Cached rows skip the API call entirely and reuse
     // the previously-computed score so rankings stay stable across runs.
@@ -748,12 +764,30 @@ export default function Home() {
               </div>
             )}
 
-            <button onClick={() => runAnalysis()} disabled={!validRows.length || runStatus === 'running'}
-              className="w-full py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
-              {runStatus === 'running'
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing {validRows.length} companies...</>
-                : <>Run Analysis →</>}
-            </button>
+            <div className="flex gap-2 items-stretch">
+              <button onClick={() => runAnalysis()} disabled={!validRows.length || runStatus === 'running'}
+                className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+                {runStatus === 'running'
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> {demoMode ? 'Loading demo…' : `Analyzing ${validRows.length} companies…`}</>
+                  : <>Run Analysis →</>}
+              </button>
+              {/* Demo mode toggle — square V-edge button */}
+              <button
+                onClick={() => setDemoMode(d => !d)}
+                title={demoMode ? 'Demo mode ON — click to switch to live AI scoring' : 'Click to enable demo mode (hardcoded scores)'}
+                className={cn(
+                  'w-12 rounded-xl border-2 flex flex-col items-center justify-center gap-0.5 transition-all font-bold text-[10px] tracking-wider select-none',
+                  demoMode
+                    ? 'bg-slate-100 text-slate-400 border-slate-200'
+                    : 'bg-foreground text-background border-transparent'
+                )}
+              >
+                <span className="text-[9px] font-extrabold leading-none">DEMO</span>
+                <span className={cn('text-[8px] leading-none', demoMode ? 'text-slate-400' : 'text-background/60')}>
+                  {demoMode ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -800,7 +834,12 @@ export default function Home() {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-red-700/80">DQ</p>
                   <p className="text-lg font-extrabold text-red-600 leading-tight tabular-nums">{counts.DQ}</p>
                 </div>
-                <div className="ml-auto px-3">
+                <div className="ml-auto px-3 flex items-center gap-2">
+                  {demoMode && (
+                    <span className="text-[10px] font-extrabold tracking-widest text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded">
+                      DEMO
+                    </span>
+                  )}
                   <button
                     onClick={() => { setResults([]); setProgress({}); setRunStatus('idle'); setAnalyzingList([]) }}
                     className="px-3 py-1.5 text-xs font-semibold rounded-xl text-on-surface-variant hover:bg-red-50 hover:text-red-600 transition-all">
