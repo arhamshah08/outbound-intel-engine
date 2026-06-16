@@ -18,9 +18,15 @@ export async function POST(req: Request) {
 
       send({ type: 'start', total: companies.length, campaignName })
 
+      type RowInput = {
+        name: string
+        website: string
+        overrides?: { funding?: string; headcount?: string; contacts?: string; description?: string }
+      }
+
       // Process ALL companies in parallel — sequential chunks caused timeout with 5+ companies
       await Promise.all(
-        companies.map(async (company: { name: string; website: string }) => {
+        companies.map(async (company: RowInput) => {
           const key = company.name.trim()
           if (!key) return
 
@@ -29,7 +35,7 @@ export async function POST(req: Request) {
           try {
             const result = await enrichCompany(
               key,
-              { product, domain: company.website, tags },
+              { product, domain: company.website, tags, overrides: company.overrides },
               (step: string, message: string, iteration?: number, snippet?: string) =>
                 send({ type: 'progress', company: key, step, message, iteration: iteration ?? 1, snippet }),
             )

@@ -343,6 +343,11 @@ export default function Home() {
   const [analyzingList, setAnalyzingList] = useState<string[]>([])
   const [filter, setFilter]             = useState<Filter>('ALL')
   const [locationFilter, setLocationFilter] = useState('')
+  // Per-row overrides keyed by company name. When the user fills in a missing
+  // field chip, we stash the value here and pass it to enrichCompany on re-run.
+  const [overrides, setOverrides] = useState<Record<string, Record<string, string>>>({})
+  const [editingChip, setEditingChip] = useState<{ company: string; field: string } | null>(null)
+  const [chipDraft, setChipDraft] = useState('')
   const resultsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -375,6 +380,28 @@ export default function Home() {
   }
   function removeRow(i: number) { setRows(prev => prev.filter((_, j) => j !== i)) }
   function addRow() { setRows(prev => [...prev, { name: '', website: '' }]) }
+
+  async function submitChipValue(companyName: string, field: string, value: string) {
+    const v = value.trim()
+    if (!v) return
+    setEditingChip(null)
+    setChipDraft('')
+
+    if (field === 'domain') {
+      // Domain isn't an override — it's the row's website. Patch the row.
+      setRows(prev => prev.map(r => r.name === companyName ? { ...r, website: v } : r))
+    } else {
+      setOverrides(prev => ({
+        ...prev,
+        [companyName]: { ...(prev[companyName] ?? {}), [field]: v },
+      }))
+    }
+
+    // Bust cache for this company and force re-enrichment with the new value.
+    const row = validRows.find(r => r.name === companyName)
+    if (row) await clearCachedFor(row.website || row.name, product, icpTags)
+    await runAnalysis({ forceRows: [companyName] })
+  }
 
   function handlePasteImport() {
     const newRows = pasteText.trim().split('\n').filter(Boolean).map(line => {
@@ -422,7 +449,15 @@ export default function Home() {
     const response = await fetch('/api/enrich', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ companies: rowsToFetch, product, campaignName, tags: icpTags }),
+      body: JSON.stringify({
+        companies: rowsToFetch.map(r => ({
+          ...r,
+          overrides: overrides[r.name] && Object.keys(overrides[r.name]).length > 0 ? overrides[r.name] : undefined,
+        })),
+        product,
+        campaignName,
+        tags: icpTags,
+      }),
     })
 
     const reader = response.body!.getReader()
@@ -790,16 +825,45 @@ export default function Home() {
                             <div className="text-xs text-on-surface-variant mt-0.5">{r.domain}</div>
                             {r.location && <div className="text-xs text-on-surface-variant/70 mt-0.5">{r.location}</div>}
                             {r.missingFields && r.missingFields.length > 0 && (
-                              <div className="mt-1.5 flex flex-wrap gap-1 max-w-[280px]">
-                                {r.missingFields.map(m => (
-                                  <span
-                                    key={m.field}
-                                    title={`Help us by adding: ${m.label}`}
-                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5"
-                                  >
-                                    ? {m.label}
-                                  </span>
-                                ))}
+                              <div className="mt-1.5 flex flex-wrap gap-1 max-w-[320px]">
+                                {r.missingFields.map(m => {
+                                  const isEditing = editingChip?.company === r.name && editingChip?.field === m.field
+                                  if (isEditing) {
+                                    return (
+                                      <span key={m.field} className="inline-flex items-center gap-1">
+                                        <input
+                                          autoFocus
+                                          value={chipDraft}
+                                          onChange={e => setChipDraft(e.target.value)}
+                                          onKeyDown={e => {
+                                            if (e.key === 'Enter') { e.preventDefault(); void submitChipValue(r.name, m.field, chipDraft) }
+                                            if (e.key === 'Escape') { setEditingChip(null); setChipDraft('') }
+                                          }}
+                                          placeholder={m.label}
+                                          className="text-[11px] px-1.5 py-0.5 border border-amber-400 rounded bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 min-w-[180px]"
+                                        />
+                                        <button
+                                          onClick={() => void submitChipValue(r.name, m.field, chipDraft)}
+                                          className="text-[10px] font-semibold text-amber-800 hover:text-amber-900"
+                                        >✓</button>
+                                        <button
+                                          onClick={() => { setEditingChip(null); setChipDraft('') }}
+                                          className="text-[10px] text-amber-700/60 hover:text-amber-800"
+                                        >✕</button>
+                                      </span>
+                                    )
+                                  }
+                                  return (
+                                    <button
+                                      key={m.field}
+                                      onClick={() => { setEditingChip({ company: r.name, field: m.field }); setChipDraft('') }}
+                                      title={`Click to add: ${m.label}`}
+                                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 hover:bg-amber-100 hover:border-amber-300 transition-colors"
+                                    >
+                                      + {m.label}
+                                    </button>
+                                  )
+                                })}
                               </div>
                             )}
                           </td>

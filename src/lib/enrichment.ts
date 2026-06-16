@@ -68,7 +68,12 @@ type OnProgress = (step: string, message: string, iteration?: number, snippet?: 
 
 export async function enrichCompany(
   input: string,
-  opts: { product: string; domain?: string; tags?: string[] },
+  opts: {
+    product: string
+    domain?: string
+    tags?: string[]
+    overrides?: { funding?: string; headcount?: string; contacts?: string; description?: string }
+  },
   onProgress: OnProgress,
 ): Promise<CompanyResult> {
   const id = Math.random().toString(36).slice(2)
@@ -79,6 +84,20 @@ export async function enrichCompany(
   function addPoint(source: string, type: string, value: string, confidence: 'High' | 'Medium' | 'Low', url: string, gap = false, loopAction?: string) {
     inputData.push({ id: dataCounter++, source, type, value, confidence, url, gap, loopAction })
   }
+
+  // User-provided overrides become high-confidence data points sourced as "User".
+  // They count as real scraped sources for the source-count threshold so a row
+  // that the user manually filled in won't get downgraded to INSUFFICIENT.
+  const overrides = opts.overrides ?? {}
+  if (overrides.funding)     addPoint('User', 'Funding', overrides.funding, 'High', 'user-input')
+  if (overrides.headcount)   addPoint('User', 'Headcount', overrides.headcount, 'High', 'user-input')
+  if (overrides.contacts) {
+    // Free-form contact hint, e.g. "John Smith — COO"
+    addPoint('User', 'Contact', overrides.contacts, 'High', 'user-input')
+    const [namePart, titlePart] = overrides.contacts.split(/[—\-:]/).map(s => s.trim())
+    if (namePart) contacts.push({ name: namePart, title: titlePart || 'Executive', whyThis: 'User-provided contact' })
+  }
+  if (overrides.description) addPoint('User', 'Company Overview', overrides.description, 'High', 'user-input')
 
   // ── ITERATION 1: Broad discovery ──────────────────────────────────────────
   onProgress('discover', 'Querying Exa · Company overview + pain points + contacts', 1)
@@ -265,10 +284,10 @@ export async function enrichCompany(
   // Track fields enrichment couldn't find. UI will surface inline inputs asking
   // the user to fill these in instead of silently guessing or scoring 0.
   const missingFields: { field: string; label: string }[] = []
-  if (!opts.domain && !co.domain) missingFields.push({ field: 'domain', label: 'Company website (we couldn\'t find it)' })
-  if (!co.funding) missingFields.push({ field: 'funding', label: 'Funding stage or amount' })
-  if (!co.headcount) missingFields.push({ field: 'headcount', label: 'Employee count' })
-  if (contacts.length === 0) missingFields.push({ field: 'contacts', label: 'A decision-maker name or LinkedIn URL' })
+  if (!opts.domain && !co.domain) missingFields.push({ field: 'domain', label: 'Company website' })
+  if (!co.funding && !overrides.funding) missingFields.push({ field: 'funding', label: 'Funding stage or amount' })
+  if (!co.headcount && !overrides.headcount) missingFields.push({ field: 'headcount', label: 'Employee count' })
+  if (contacts.length === 0 && !overrides.contacts) missingFields.push({ field: 'contacts', label: 'Decision-maker name + title' })
 
   const [rawScore, enrichedContacts] = await Promise.all([
     scoreCompany(partial, opts.product, opts.tags),
