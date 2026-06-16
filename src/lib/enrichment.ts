@@ -1,6 +1,6 @@
 import { exaSearch, exaDeep, apolloSearch, braveSearch } from './exa'
 import { scoreCompany, generateBrief, scoreContacts } from './ai'
-import type { CompanyResult, InputDataPoint, Contact } from './types'
+import type { CompanyResult, InputDataPoint, Contact, ResearchStats } from './types'
 
 const COMPANY_SCHEMA = {
   type: 'object',
@@ -72,7 +72,7 @@ export async function enrichCompany(
     product: string
     domain?: string
     tags?: string[]
-    overrides?: { funding?: string; headcount?: string; contacts?: string; description?: string }
+    overrides?: { funding?: string; headcount?: string; contacts?: string; description?: string; founders?: string }
   },
   onProgress: OnProgress,
 ): Promise<CompanyResult> {
@@ -98,6 +98,7 @@ export async function enrichCompany(
     if (namePart) contacts.push({ name: namePart, title: titlePart || 'Executive', whyThis: 'User-provided contact' })
   }
   if (overrides.description) addPoint('User', 'Company Overview', overrides.description, 'High', 'user-input')
+  if (overrides.founders)    addPoint('User', 'Founder', overrides.founders, 'High', 'user-input')
 
   // ── ITERATION 1: Broad discovery ──────────────────────────────────────────
   onProgress('discover', 'Querying Exa · Company overview + pain points + contacts', 1)
@@ -240,6 +241,32 @@ export async function enrichCompany(
     }
   }
 
+  // ── RESEARCH BREADTH: founders + latest blog ──────────────────────────────
+  // Separate from scoring data — these populate the research-transparency chips
+  // so the user can see exactly what we did and didn't find for this company.
+  onProgress('deep-dive', 'Looking up founders + latest blog/news', 3)
+  const [founderResults, blogResults] = await Promise.all([
+    exaSearch(`${name} founder OR co-founder OR "founded by" site:linkedin.com OR site:crunchbase.com`, 3).catch(() => []),
+    exaSearch(`${name} blog OR news 2024 OR 2025`, 3).catch(() => []),
+  ])
+
+  // Detect founders from titles and snippets
+  const founderNames: string[] = []
+  for (const r of founderResults) {
+    const text = `${r.title} ${r.highlights?.[0] ?? ''}`
+    const match = text.match(/(?:founder|co-founder|founded by)[:\s,-]+([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/i)
+    if (match?.[1] && !founderNames.includes(match[1])) {
+      founderNames.push(match[1])
+      addPoint('Exa (research)', 'Founder', match[1], 'Medium', r.url)
+    }
+  }
+
+  // Pick the most recent-looking blog/news result
+  const lastBlog = blogResults[0]
+  if (lastBlog) {
+    addPoint('Exa (research)', 'Recent Blog/News', lastBlog.title.slice(0, 140), 'Medium', lastBlog.url)
+  }
+
   // Flag remaining gaps for research
   if (!contacts.some(c => c.email)) {
     addPoint('—', 'Email', 'Not found', 'Low', '', true, `→ Search apollo.io or hunter.io/${domain}`)
@@ -281,6 +308,26 @@ export async function enrichCompany(
   )
   partial.inputData = inputData
 
+  // Research breadth: distinct sites we visited across ALL searches (including
+  // ones that didn't end up in inputData), so the user sees how much research
+  // we actually did, not just how much we cited.
+  const allCrawledUrls = new Set<string>()
+  for (const u of distinctSources) allCrawledUrls.add(u)
+  for (const r of discoveryResults.results)  if (r.url) allCrawledUrls.add(r.url)
+  for (const r of painResults.results)       if (r.url) allCrawledUrls.add(r.url)
+  for (const r of leadershipResults.results) if (r.url) allCrawledUrls.add(r.url)
+  for (const r of founderResults)            if (r.url) allCrawledUrls.add(r.url)
+  for (const r of blogResults)               if (r.url) allCrawledUrls.add(r.url)
+
+  const research: ResearchStats = {
+    sitesCrawled: allCrawledUrls.size,
+    fundingFound: Boolean(co.funding || overrides.funding),
+    foundersFound: founderNames.length > 0,
+    founderNames: founderNames.length > 0 ? founderNames : undefined,
+    lastBlogTitle: lastBlog?.title?.slice(0, 140),
+    lastBlogUrl: lastBlog?.url,
+  }
+
   // Track fields enrichment couldn't find. UI will surface inline inputs asking
   // the user to fill these in instead of silently guessing or scoring 0.
   const missingFields: { field: string; label: string }[] = []
@@ -288,6 +335,7 @@ export async function enrichCompany(
   if (!co.funding && !overrides.funding) missingFields.push({ field: 'funding', label: 'Funding stage or amount' })
   if (!co.headcount && !overrides.headcount) missingFields.push({ field: 'headcount', label: 'Employee count' })
   if (contacts.length === 0 && !overrides.contacts) missingFields.push({ field: 'contacts', label: 'Decision-maker name + title' })
+  if (founderNames.length === 0 && !overrides.founders) missingFields.push({ field: 'founders', label: 'Founder name(s)' })
 
   const [rawScore, enrichedContacts] = await Promise.all([
     scoreCompany(partial, opts.product, opts.tags),
@@ -336,5 +384,6 @@ export async function enrichCompany(
     mainPhone: (co.phone as string | undefined) || enrichedContacts.find(c => c.phone)?.phone,
     score,
     missingFields: missingFields.length > 0 ? missingFields : undefined,
+    research,
   }
 }

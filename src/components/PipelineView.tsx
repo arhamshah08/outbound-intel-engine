@@ -428,6 +428,17 @@ function BriefTabs({ brief, onRegenerate, loading }: { brief: CallBrief | null |
   )
 }
 
+const EXPANDED_KEY = 'oie:pipelineExpanded:v1'
+
+function loadExpandedSet(): Set<string> {
+  if (typeof window === 'undefined') return new Set()
+  try { return new Set(JSON.parse(window.localStorage.getItem(EXPANDED_KEY) ?? '[]')) } catch { return new Set() }
+}
+function saveExpandedSet(s: Set<string>) {
+  if (typeof window === 'undefined') return
+  try { window.localStorage.setItem(EXPANDED_KEY, JSON.stringify(Array.from(s))) } catch {}
+}
+
 function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: () => void }) {
   const [activities,    setActivities]    = useState<Activity[]>([])
   const [logOpen,       setLogOpen]       = useState<'call' | 'email' | 'linkedin' | null>(null)
@@ -435,6 +446,15 @@ function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: 
   const [passing,       setPassing]       = useState(false)
   const [playbookContact, setPlaybookContact] = useState<string | null>(null)
   const [briefLoading, setBriefLoading] = useState(false)
+  const [expanded, setExpanded] = useState<boolean>(() => loadExpandedSet().has(prospect.id))
+
+  function toggleExpanded() {
+    const next = !expanded
+    setExpanded(next)
+    const set = loadExpandedSet()
+    if (next) set.add(prospect.id); else set.delete(prospect.id)
+    saveExpandedSet(set)
+  }
 
   async function regenerateBrief() {
     setBriefLoading(true)
@@ -488,11 +508,21 @@ function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: 
 
   const isDQ    = prospect.score_status === 'DISQUALIFIED'
   const topPain = prospect.pain_points?.[0]?.value?.slice(0, 120)
+  const introLine = prospect.description?.slice(0, 140)
+    || prospect.pain_points?.[0]?.value?.slice(0, 140)
+    || `${prospect.industry || 'Healthcare'} · ${prospect.headcount || 'Unknown size'}`
 
   return (
     <div className="bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-card">
-      {/* Card header */}
-      <div className="px-5 py-4 flex items-start justify-between gap-3 bg-surface-low border-b border-outline-variant">
+      {/* Card header — double-click toggles full detail */}
+      <div
+        onDoubleClick={toggleExpanded}
+        title={expanded ? 'Double-click to collapse' : 'Double-click to open the full call brief'}
+        className={cn(
+          'px-5 py-4 flex items-start justify-between gap-3 bg-surface-low cursor-pointer select-none transition-colors',
+          expanded ? 'border-b border-outline-variant' : 'hover:bg-surface-low/80'
+        )}
+      >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className={cn('px-2 py-0.5 rounded-full text-xs font-bold border',
@@ -514,7 +544,10 @@ function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: 
           </div>
           <h3 className="text-on-surface font-bold text-base leading-tight">{prospect.company_name}</h3>
           <p className="text-on-surface-variant text-xs mt-0.5">{prospect.domain} · {prospect.industry}</p>
-          {prospect.location && <span className="text-xs text-on-surface-variant/70">{prospect.location}</span>}
+          {!expanded && (
+            <p className="text-xs text-on-surface-variant/80 mt-1.5 leading-relaxed line-clamp-2">{introLine}</p>
+          )}
+          {expanded && prospect.location && <span className="text-xs text-on-surface-variant/70">{prospect.location}</span>}
         </div>
         <div className="flex items-start gap-2 shrink-0">
           <div className="text-right">
@@ -523,7 +556,15 @@ function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: 
             )}>{isDQ ? '—' : prospect.score}</p>
             <p className="text-on-surface-variant/60 text-xs mt-0.5">/100</p>
           </div>
-          <button onClick={passProspect} disabled={passing}
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleExpanded() }}
+            title={expanded ? 'Collapse' : 'Open for call'}
+            className="w-6 h-6 mt-0.5 flex items-center justify-center rounded-full bg-white border border-outline-variant text-on-surface-variant hover:bg-surface-low transition-all">
+            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); void passProspect() }}
+            disabled={passing}
             title="Remove from pipeline"
             className="w-6 h-6 mt-0.5 flex items-center justify-center rounded-full bg-white border border-outline-variant text-on-surface-variant hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all disabled:opacity-30">
             {passing ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
@@ -531,6 +572,7 @@ function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: 
         </div>
       </div>
 
+      {expanded && (
       <div className="p-5 space-y-4">
         {/* Pain points with sources */}
         {prospect.pain_points && prospect.pain_points.length > 0 && (
@@ -696,6 +738,7 @@ function ProspectCard({ prospect, onRefresh }: { prospect: Prospect; onRefresh: 
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }

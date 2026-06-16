@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       type RowInput = {
         name: string
         website: string
-        overrides?: { funding?: string; headcount?: string; contacts?: string; description?: string }
+        overrides?: { funding?: string; headcount?: string; contacts?: string; description?: string; founders?: string }
       }
 
       // Process ALL companies in parallel — sequential chunks caused timeout with 5+ companies

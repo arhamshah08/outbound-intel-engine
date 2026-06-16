@@ -184,4 +184,15 @@ export interface CompanyResult {
   callBrief?: CallBrief
   error?: string
   missingFields?: { field: string; label: string }[]
+  research?: ResearchStats
+}
+
+export interface ResearchStats {
+  sitesCrawled: number
+  fundingFound: boolean
+  foundersFound: boolean
+  founderNames?: string[]
+  lastBlogTitle?: string
+  lastBlogUrl?: string
+  lastBlogDate?: string
 }

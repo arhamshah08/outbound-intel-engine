@@ -4,6 +4,7 @@ import { Phone, Mail, Linkedin, CheckCircle, XCircle, Loader2 } from 'lucide-rea
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import type { Prospect, Activity } from '@/lib/types'
+import { ScoreDistributionChart, OutcomeDonutChart } from './PerformanceChart'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
@@ -74,6 +75,22 @@ export default function HistoryView() {
 
   return (
     <div className="space-y-6">
+      {/* Performance charts */}
+      {prospects.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <ScoreDistributionChart
+              items={prospects.map(p => ({ score: p.score, status: p.score_status }))}
+              title="Score distribution"
+            />
+          </div>
+          <OutcomeDonutChart
+            items={prospects.map(p => ({ outcome_status: p.outcome_status ?? null, status: p.status }))}
+            title="Outcomes"
+          />
+        </div>
+      )}
+
       {/* Stats */}
       <div className="flex flex-wrap gap-3">
         <StatCard label="Pursued"   value={completed.length} sub="completed" color="green" />

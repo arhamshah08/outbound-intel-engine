@@ -11,6 +11,7 @@ import { supabase }    from '@/lib/supabase'
 import { getCached, setCached, clearCachedFor } from '@/lib/scoreCache'
 import DatabaseSetup   from '@/components/DatabaseSetup'
 import NetworkHero     from '@/components/NetworkHero'
+import { ScoreDistributionChart } from '@/components/PerformanceChart'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -61,6 +62,59 @@ function PriorityBadge({ status }: { status: CompanyResult['score']['status'] })
       p === 'DQ'   ? 'bg-red-100 text-red-600' :
                      'bg-slate-100 text-slate-500'
     )}>{p}</span>
+  )
+}
+
+function ResearchChips({ r }: { r: CompanyResult }) {
+  const research = r.research
+  if (!research) return null
+  const { sitesCrawled, fundingFound, foundersFound, founderNames, lastBlogTitle, lastBlogUrl } = research
+  return (
+    <div className="mt-1.5 flex flex-wrap gap-1 max-w-[460px]">
+      <span
+        title={`Distinct websites we visited while researching ${r.name}`}
+        className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 tabular-nums"
+      >
+        {sitesCrawled} sites crawled
+      </span>
+      <span
+        title={fundingFound ? 'Fundraising info located' : 'No fundraising info found'}
+        className={cn('inline-flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 border',
+          fundingFound
+            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+            : 'text-slate-500 bg-slate-50 border-slate-200'
+        )}
+      >
+        {fundingFound ? '✓ Funding' : '✗ No funding'}
+      </span>
+      <span
+        title={foundersFound ? `Founders: ${(founderNames ?? []).join(', ')}` : 'No founder info found'}
+        className={cn('inline-flex items-center gap-1 text-[10px] font-semibold rounded px-1.5 py-0.5 border',
+          foundersFound
+            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+            : 'text-slate-500 bg-slate-50 border-slate-200'
+        )}
+      >
+        {foundersFound
+          ? `✓ ${(founderNames ?? [])[0]}${(founderNames ?? []).length > 1 ? ` +${founderNames!.length - 1}` : ''}`
+          : '✗ No founder'}
+      </span>
+      {lastBlogTitle && lastBlogUrl ? (
+        <a
+          href={lastBlogUrl.startsWith('http') ? lastBlogUrl : `https://${lastBlogUrl}`}
+          target="_blank"
+          rel="noreferrer"
+          title={`Latest blog/news: ${lastBlogTitle}`}
+          className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5 hover:bg-blue-100 transition-colors max-w-[220px] truncate"
+        >
+          📰 {lastBlogTitle.slice(0, 36)}{lastBlogTitle.length > 36 ? '…' : ''}
+        </a>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
+          ✗ No recent blog
+        </span>
+      )}
+    </div>
   )
 }
 
@@ -711,6 +765,13 @@ export default function Home() {
         {/* Results */}
         {results.length > 0 && (
           <div ref={resultsRef} className="space-y-4 animate-slide-in">
+            {/* Run summary chart — score distribution across this campaign run */}
+            <ScoreDistributionChart
+              items={results.map(r => ({ score: r.score.total, status: r.score.status }))}
+              title={`Run distribution · ${results.length} analyzed`}
+              height={140}
+            />
+
             {/* Unified summary + filter bar */}
             <div className="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
               {/* Top: summary metrics */}
@@ -824,6 +885,7 @@ export default function Home() {
                             </div>
                             <div className="text-xs text-on-surface-variant mt-0.5">{r.domain}</div>
                             {r.location && <div className="text-xs text-on-surface-variant/70 mt-0.5">{r.location}</div>}
+                            <ResearchChips r={r} />
                             {r.missingFields && r.missingFields.length > 0 && (
                               <div className="mt-1.5 flex flex-wrap gap-1 max-w-[320px]">
                                 {r.missingFields.map(m => {
