@@ -197,12 +197,25 @@ function ScoreAdjuster({ prospect }: { prospect: Prospect }) {
                 {d.evidence && (
                   <p className="text-xs text-on-surface-variant/70 pl-1 leading-relaxed">{d.evidence}</p>
                 )}
-                {d.researchUrl && (
+                {d.sourceUrl ? (
+                  <a href={d.sourceUrl.startsWith('http') ? d.sourceUrl : `https://${d.sourceUrl}`}
+                    target="_blank" rel="noreferrer"
+                    className={cn(
+                      'inline-flex items-center gap-1 text-xs pl-1 transition-colors',
+                      d.evidenceVerified
+                        ? 'text-primary/70 hover:text-primary'
+                        : 'text-amber-700 hover:text-amber-800'
+                    )}>
+                    {d.evidenceVerified ? 'Source ↗' : <><span>⚠ Unverified source ↗</span></>}
+                  </a>
+                ) : d.researchUrl ? (
                   <a href={d.researchUrl.startsWith('http') ? d.researchUrl : `https://${d.researchUrl}`}
                     target="_blank" rel="noreferrer"
                     className="inline-flex items-center gap-0.5 text-xs text-primary/60 hover:text-primary transition-colors pl-1">
                     Source ↗
                   </a>
+                ) : (
+                  <span className="text-xs text-amber-700/70 pl-1">⚠ No source cited</span>
                 )}
               </div>
             )

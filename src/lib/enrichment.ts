@@ -262,6 +262,14 @@ export async function enrichCompany(
   )
   partial.inputData = inputData
 
+  // Track fields enrichment couldn't find. UI will surface inline inputs asking
+  // the user to fill these in instead of silently guessing or scoring 0.
+  const missingFields: { field: string; label: string }[] = []
+  if (!opts.domain && !co.domain) missingFields.push({ field: 'domain', label: 'Company website (we couldn\'t find it)' })
+  if (!co.funding) missingFields.push({ field: 'funding', label: 'Funding stage or amount' })
+  if (!co.headcount) missingFields.push({ field: 'headcount', label: 'Employee count' })
+  if (contacts.length === 0) missingFields.push({ field: 'contacts', label: 'A decision-maker name or LinkedIn URL' })
+
   const [rawScore, enrichedContacts] = await Promise.all([
     scoreCompany(partial, opts.product, opts.tags),
     scoreContacts(contacts, partial, opts.product),
@@ -308,5 +316,6 @@ export async function enrichCompany(
     contacts: enrichedContacts,
     mainPhone: (co.phone as string | undefined) || enrichedContacts.find(c => c.phone)?.phone,
     score,
+    missingFields: missingFields.length > 0 ? missingFields : undefined,
   }
 }

@@ -163,6 +163,16 @@ export async function scoreCompany(
   const tagLine = tags && tags.length > 0
     ? `\nICP TAGS (use these as additional must-have criteria when scoring ICP Fit): ${tags.join(', ')}`
     : ''
+
+  // Build the list of source URLs the model is allowed to cite. Each dimension's
+  // sourceUrl must come from this list; anything else is flagged as unverified.
+  const allowedSources = Array.from(
+    new Set((companyData.inputData ?? []).map(d => d.url).filter((u): u is string => Boolean(u && u.length > 0))),
+  )
+  const sourceList = allowedSources.length
+    ? allowedSources.map((u, i) => `[${i + 1}] ${u}`).join('\n')
+    : '(no scraped sources available)'
+
   const prompt = `You are a B2B sales intelligence engine scoring healthcare companies as prospects.
 
 PRODUCT BEING SOLD: ${product || 'Healthcare workflow automation platform'}${tagLine}
@@ -179,6 +189,9 @@ Contacts found: ${companyData.contacts?.map(c => `${c.name} (${c.title})`).join(
 Pain points: ${companyData.inputData?.filter(d => d.type === 'Pain Point').map(d => d.value).join(' | ')}
 Buying signals: ${companyData.inputData?.filter(d => d.type === 'Buying Signal').map(d => d.value).join(' | ')}
 
+ALLOWED SOURCE URLs (you MUST cite one of these in "sourceUrl" for every dimension — empty string if none of these justify your score):
+${sourceList}
+
 HARD DISQUALIFICATION RULE (apply FIRST):
 If the company is a hospital system, academic medical center, integrated delivery network, or government health system — set "disqualified": true and set ALL dimension scores to 0. These entities have 12-18 month procurement cycles, committee buying structures, and rigid IT governance that makes them a poor ICP fit. Examples that must be DQ'd: Kaiser Permanente, Mayo Clinic, HCA Healthcare, NYU Langone, Baylor Scott & White Health, Sutter Health, CommonSpirit, Ascension, UPMC, any entity with "Health System" or "Hospital" as primary identifier.
 
@@ -194,21 +207,38 @@ Return ONLY valid JSON (no markdown, no code block). Scores must reflect ${compa
 {
   "disqualified": false,
   "dimensions": [
-    { "name": "ICP Fit", "maxScore": 30, "score": 0, "evidence": "evidence about ICP fit from data above", "confidence": "High", "researchUrl": "" },
-    { "name": "Workflow Pain", "maxScore": 20, "score": 0, "evidence": "evidence about workflow pain", "confidence": "High", "researchUrl": "" },
-    { "name": "Scale / Complexity", "maxScore": 15, "score": 0, "evidence": "evidence about scale", "confidence": "Medium", "researchUrl": "" },
-    { "name": "Buying Committee", "maxScore": 15, "score": 0, "evidence": "evidence about decision-makers", "confidence": "Medium", "researchUrl": "" },
-    { "name": "Growth Pressure", "maxScore": 10, "score": 0, "evidence": "evidence about growth/PE pressure", "confidence": "High", "researchUrl": "" },
-    { "name": "Messaging", "maxScore": 10, "score": 0, "evidence": "evidence about messaging fit", "confidence": "High", "researchUrl": "" }
+    { "name": "ICP Fit", "maxScore": 30, "score": 0, "evidence": "evidence about ICP fit from data above", "confidence": "High", "sourceUrl": "" },
+    { "name": "Workflow Pain", "maxScore": 20, "score": 0, "evidence": "evidence about workflow pain", "confidence": "High", "sourceUrl": "" },
+    { "name": "Scale / Complexity", "maxScore": 15, "score": 0, "evidence": "evidence about scale", "confidence": "Medium", "sourceUrl": "" },
+    { "name": "Buying Committee", "maxScore": 15, "score": 0, "evidence": "evidence about decision-makers", "confidence": "Medium", "sourceUrl": "" },
+    { "name": "Growth Pressure", "maxScore": 10, "score": 0, "evidence": "evidence about growth/PE pressure", "confidence": "High", "sourceUrl": "" },
+    { "name": "Messaging", "maxScore": 10, "score": 0, "evidence": "evidence about messaging fit", "confidence": "High", "sourceUrl": "" }
   ]
 }
-Replace each "score": 0 with a real integer 0-maxScore based on the company data. Replace each "evidence" string with a specific finding from the data above.`
+Replace each "score": 0 with a real integer 0-maxScore based on the company data. Replace each "evidence" string with a specific finding from the data above. For "sourceUrl", paste the FULL URL of the single most relevant source from the ALLOWED SOURCE URLs list above that supports this dimension's score — never invent a URL. If no source in the list supports the score, use an empty string "".`
 
   try {
     const raw = await generateScoring(prompt)
     const json = JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0] ?? '{}')
-    const dimensions = json.dimensions ?? []
-    const total = dimensions.reduce((sum: number, d: { score: number }) => sum + d.score, 0)
+    const rawDimensions: Array<Record<string, unknown>> = json.dimensions ?? []
+    const allowedSet = new Set(allowedSources)
+    // Verify each cited source URL is one we actually scraped. If the model
+    // cited a URL not in the allowed list, evidenceVerified=false flags the
+    // dimension as potentially hallucinated in the UI.
+    const dimensions = rawDimensions.map(d => {
+      const sourceUrl = typeof d.sourceUrl === 'string' ? d.sourceUrl : ''
+      const evidenceVerified = sourceUrl.length > 0 && allowedSet.has(sourceUrl)
+      return {
+        name: d.name as string,
+        maxScore: d.maxScore as number,
+        score: d.score as number,
+        evidence: d.evidence as string,
+        confidence: d.confidence as 'High' | 'Medium' | 'Low',
+        sourceUrl,
+        evidenceVerified,
+      }
+    })
+    const total = dimensions.reduce((sum, d) => sum + (d.score ?? 0), 0)
     const disqualified = json.disqualified === true
     return {
       dimensions,

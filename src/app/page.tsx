@@ -2,12 +2,13 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Loader2,
-  Phone, Plus, X, ClipboardPaste,
+  Phone, Plus, X, ClipboardPaste, RotateCcw,
   Search, Database, Users, Target, CheckCircle, Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CompanyResult } from '@/lib/types'
 import { supabase }    from '@/lib/supabase'
+import { getCached, setCached, clearCachedFor } from '@/lib/scoreCache'
 import DatabaseSetup   from '@/components/DatabaseSetup'
 import NetworkHero     from '@/components/NetworkHero'
 
@@ -383,18 +384,45 @@ export default function Home() {
     if (newRows.length) { setRows(newRows); setPasteText(''); setShowPaste(false) }
   }
 
-  async function runAnalysis() {
+  async function runAnalysis(opts: { forceRows?: string[] } = {}) {
     if (!validRows.length) return
     setRunStatus('running')
-    setResults([])
     setProgress({})
     setFilter('ALL')
-    setAnalyzingList(validRows.map(r => r.name))
+
+    // Check cache per company. Cached rows skip the API call entirely and reuse
+    // the previously-computed score so rankings stay stable across runs.
+    // "Re-score" button passes forceRows to bypass cache for specific companies.
+    const forceSet = new Set(opts.forceRows ?? [])
+    const cachedResults: CompanyResult[] = []
+    const rowsToFetch: CompanyRow[] = []
+
+    for (const row of validRows) {
+      const domainKey = row.website || row.name
+      const cached = forceSet.has(row.name)
+        ? null
+        : await getCached(domainKey, product, icpTags)
+      if (cached) {
+        cachedResults.push(cached)
+      } else {
+        rowsToFetch.push(row)
+      }
+    }
+
+    setResults(cachedResults.slice().sort((a, b) => b.score.total - a.score.total))
+    setAnalyzingList(rowsToFetch.map(r => r.name))
+
+    if (rowsToFetch.length === 0) {
+      // Everything was cached. Nothing to fetch — show results immediately.
+      setRunStatus('done')
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 200)
+      return
+    }
 
     const response = await fetch('/api/enrich', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ companies: validRows, product, campaignName, tags: icpTags }),
+      body: JSON.stringify({ companies: rowsToFetch, product, campaignName, tags: icpTags }),
     })
 
     const reader = response.body!.getReader()
@@ -424,7 +452,13 @@ export default function Home() {
             // Flash "done" on pipeline, then remove after 2s
             setProgress(p => ({ ...p, [event.company]: { step: 'done', message: 'Complete!', iteration: 3, snippets: p[event.company]?.snippets ?? [] } }))
             setTimeout(() => setProgress(p => { const n = { ...p }; delete n[event.company]; return n }), 2000)
-            setResults(r => [...r, event.data].sort((a, b) => b.score.total - a.score.total))
+            // Persist to 24h cache so re-runs of the same campaign reuse the score
+            const row = validRows.find(r => r.name === event.company)
+            if (row && event.data) {
+              const domainKey = row.website || row.name
+              void setCached(domainKey, product, icpTags, event.data as CompanyResult)
+            }
+            setResults(r => [...r.filter(x => x.name !== event.company), event.data].sort((a, b) => b.score.total - a.score.total))
           } else if (event.type === 'done') {
             setRunStatus('done')
             setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 500)
@@ -625,7 +659,7 @@ export default function Home() {
               </div>
             )}
 
-            <button onClick={runAnalysis} disabled={!validRows.length || runStatus === 'running'}
+            <button onClick={() => runAnalysis()} disabled={!validRows.length || runStatus === 'running'}
               className="w-full py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-all shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
               {runStatus === 'running'
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing {validRows.length} companies...</>
@@ -755,6 +789,19 @@ export default function Home() {
                             </div>
                             <div className="text-xs text-on-surface-variant mt-0.5">{r.domain}</div>
                             {r.location && <div className="text-xs text-on-surface-variant/70 mt-0.5">{r.location}</div>}
+                            {r.missingFields && r.missingFields.length > 0 && (
+                              <div className="mt-1.5 flex flex-wrap gap-1 max-w-[280px]">
+                                {r.missingFields.map(m => (
+                                  <span
+                                    key={m.field}
+                                    title={`Help us by adding: ${m.label}`}
+                                    className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5"
+                                  >
+                                    ? {m.label}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </td>
                           {dims.map(d => (
                             <td key={d.name} className="py-3 px-2">
@@ -802,11 +849,26 @@ export default function Home() {
                             )}
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <PipelineButton
-                              company={r}
-                              campaignName={campaignName}
-                              product={product}
-                            />
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  const row = validRows.find(v => v.name === r.name)
+                                  if (row) {
+                                    void clearCachedFor(row.website || row.name, product, icpTags)
+                                  }
+                                  void runAnalysis({ forceRows: [r.name] })
+                                }}
+                                title="Re-score this company (bypass 24h cache)"
+                                className="p-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-low transition-colors"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                              </button>
+                              <PipelineButton
+                                company={r}
+                                campaignName={campaignName}
+                                product={product}
+                              />
+                            </div>
                           </td>
                         </tr>
                       )
