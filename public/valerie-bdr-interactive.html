@@ -1,861 +1,753 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Valerie Health — BDR Campaign Interactive</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #f6f8f7;
-      --bg-elevated: #ffffff;
-      --ink: #0f1a17;
-      --ink-muted: #5c6b66;
-      --ink-soft: #8a9691;
-      --border: #e2e8e5;
-      --accent: #0d6e5b;
-      --accent-light: #e8f5f1;
-      --accent-dark: #094d40;
-      --emerald: #059669;
-      --amber: #d97706;
-      --red: #dc2626;
-      --indigo: #4338ca;
-      --shadow: 0 1px 2px rgba(15, 26, 23, 0.04), 0 8px 24px rgba(15, 26, 23, 0.06);
-      --radius: 14px;
-      --radius-sm: 10px;
-      --font: "DM Sans", system-ui, sans-serif;
-      --serif: "Instrument Serif", Georgia, serif;
-      --nav-h: 64px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 24px); }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.55;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── Top nav ── */
-    .topnav {
-      position: sticky; top: 0; z-index: 100;
-      height: var(--nav-h);
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 1.5rem;
-    }
-    .brand { display: flex; align-items: center; gap: 0.75rem; }
-    .brand-mark {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-      display: grid; place-items: center;
-      color: white; font-weight: 700; font-size: 0.85rem;
-    }
-    .brand-text strong { display: block; font-size: 0.9rem; letter-spacing: -0.02em; }
-    .brand-text span { font-size: 0.72rem; color: var(--ink-muted); }
-    .nav-links { display: flex; gap: 0.25rem; flex-wrap: wrap; }
-    .nav-links a {
-      font-size: 0.78rem; font-weight: 600; color: var(--ink-muted);
-      text-decoration: none; padding: 0.45rem 0.75rem; border-radius: 999px;
-      transition: background 0.15s, color 0.15s;
-    }
-    .nav-links a:hover, .nav-links a.active { background: var(--accent-light); color: var(--accent-dark); }
-
-    /* ── Layout ── */
-    .wrap { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-    section { margin-bottom: 3rem; scroll-margin-top: calc(var(--nav-h) + 16px); }
-    .section-label {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem;
-    }
-    h2 {
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      letter-spacing: -0.03em; font-weight: 700; margin-bottom: 0.75rem;
-    }
-    .lede { color: var(--ink-muted); max-width: 62ch; font-size: 1.02rem; margin-bottom: 1.5rem; }
-
-    /* ── Hero ── */
-    .hero {
-      background: linear-gradient(160deg, #0a3d34 0%, #0d6e5b 45%, #128f78 100%);
-      color: white; border-radius: calc(var(--radius) + 6px);
-      padding: clamp(2rem, 5vw, 3.5rem);
-      margin-bottom: 2.5rem;
-      position: relative; overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-    .hero::after {
-      content: ""; position: absolute; inset: 0;
-      background: radial-gradient(circle at 85% 15%, rgba(255,255,255,0.12), transparent 45%);
-      pointer-events: none;
-    }
-    .hero-inner { position: relative; z-index: 1; }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; opacity: 0.85; margin-bottom: 1rem;
-    }
-    .hero h1 {
-      font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 5vw, 3.25rem);
-      line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1rem;
-    }
-    .hero p { opacity: 0.9; max-width: 52ch; font-size: 1.05rem; margin-bottom: 1.75rem; }
-    .hero-stats {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem; margin-top: 1.5rem;
-    }
-    .hero-stat {
-      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-      border-radius: var(--radius-sm); padding: 1rem;
-    }
-    .hero-stat strong { display: block; font-size: 1.5rem; font-weight: 700; }
-    .hero-stat span { font-size: 0.78rem; opacity: 0.8; }
-
-    /* ── Cards & grids ── */
-    .card {
-      background: var(--bg-elevated); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.25rem 1.35rem;
-      box-shadow: var(--shadow);
-    }
-    .grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-    .grid-3 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .grid-4 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-
-    /* ── Product pills ── */
-    .pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-    .pill {
-      font-size: 0.75rem; font-weight: 600; padding: 0.35rem 0.7rem;
-      border-radius: 999px; background: var(--accent-light); color: var(--accent-dark);
-      border: 1px solid #c5e6dc;
-    }
-    .pill.dq { background: #fef2f2; color: var(--red); border-color: #fecaca; }
-
-    /* ── Tab bar ── */
-    .tabs {
-      display: flex; gap: 0.35rem; flex-wrap: wrap;
-      margin-bottom: 1.25rem; padding: 0.35rem;
-      background: var(--bg-elevated); border: 1px solid var(--border);
-      border-radius: 999px; width: fit-content;
-    }
-    .tab-btn {
-      border: none; background: transparent; cursor: pointer;
-      font-family: inherit; font-size: 0.8rem; font-weight: 600;
-      color: var(--ink-muted); padding: 0.5rem 1rem; border-radius: 999px;
-      transition: all 0.15s;
-    }
-    .tab-btn.active { background: var(--accent); color: white; }
-    .tab-panel { display: none; animation: fadeIn 0.25s ease; }
-    .tab-panel.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-    /* ── Pipeline steps ── */
-    .pipeline {
-      display: grid; gap: 0.75rem;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
-    .pipe-step {
-      position: relative; padding: 1rem; border-radius: var(--radius-sm);
-      border: 1px solid var(--border); background: var(--bg-elevated);
-    }
-    .pipe-num {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--ink); color: white;
-      font-size: 0.75rem; font-weight: 700;
-      display: grid; place-items: center; margin-bottom: 0.6rem;
-    }
-    .pipe-step h4 { font-size: 0.88rem; margin-bottom: 0.35rem; }
-    .pipe-step p { font-size: 0.78rem; color: var(--ink-muted); line-height: 1.45; }
-
-    /* ── Scoring bars ── */
-    .score-row { margin-bottom: 0.85rem; }
-    .score-meta {
-      display: flex; justify-content: space-between; align-items: baseline;
-      font-size: 0.8rem; margin-bottom: 0.3rem;
-    }
-    .score-meta strong { font-weight: 600; }
-    .score-meta span { color: var(--ink-soft); font-size: 0.75rem; }
-    .bar-track {
-      height: 8px; background: #edf2ef; border-radius: 999px; overflow: hidden;
-    }
-    .bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
-
-    /* ── Account table ── */
-    .filter-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    .filter-btn {
-      border: 1px solid var(--border); background: white; cursor: pointer;
-      font-family: inherit; font-size: 0.75rem; font-weight: 600;
-      padding: 0.4rem 0.85rem; border-radius: 999px; color: var(--ink-muted);
-      transition: all 0.15s;
-    }
-    .filter-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
-    .accounts { display: flex; flex-direction: column; gap: 0.65rem; }
-    .account {
-      border: 1px solid var(--border); border-radius: var(--radius);
-      background: white; overflow: hidden; transition: box-shadow 0.15s;
-    }
-    .account:hover { box-shadow: var(--shadow); }
-    .account-header {
-      display: grid; grid-template-columns: 1fr auto auto;
-      gap: 1rem; align-items: center; padding: 1rem 1.15rem;
-      cursor: pointer; user-select: none;
-    }
-    .account-header h3 { font-size: 0.95rem; font-weight: 700; }
-    .account-header .sub { font-size: 0.78rem; color: var(--ink-muted); margin-top: 0.15rem; }
-    .score-badge {
-      font-size: 1.1rem; font-weight: 800; min-width: 3rem; text-align: right;
-    }
-    .status-badge {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
-      padding: 0.35rem 0.65rem; border-radius: 999px; white-space: nowrap;
-    }
-    .status-call { background: #d1fae5; color: #065f46; }
-    .status-seq { background: #fef3c7; color: #92400e; }
-    .status-dq { background: #fee2e2; color: #991b1b; }
-    .account-body {
-      display: none; padding: 0 1.15rem 1.15rem;
-      border-top: 1px solid var(--border);
-    }
-    .account.open .account-body { display: block; padding-top: 1rem; }
-    .account-chevron { transition: transform 0.2s; color: var(--ink-soft); }
-    .account.open .account-chevron { transform: rotate(180deg); }
-    .dim-grid { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 1rem 0; }
-    .dim-chip {
-      font-size: 0.75rem; padding: 0.5rem 0.65rem;
-      background: var(--bg); border-radius: 8px; border: 1px solid var(--border);
-    }
-    .dim-chip strong { color: var(--accent-dark); }
-    .contact-list { list-style: none; }
-    .contact-list li {
-      padding: 0.65rem 0; border-bottom: 1px solid var(--border);
-      font-size: 0.82rem;
-    }
-    .contact-list li:last-child { border-bottom: none; }
-    .contact-list .rank { color: var(--accent); font-weight: 700; margin-right: 0.35rem; }
-
-    /* ── Timeline ── */
-    .timeline { display: flex; flex-direction: column; gap: 0.65rem; }
-    .tl-row {
-      display: grid; grid-template-columns: 56px 40px 1fr;
-      gap: 0.75rem; align-items: start;
-      padding: 0.85rem; border-radius: var(--radius-sm);
-      border: 1px solid var(--border); background: white;
-    }
-    .tl-day {
-      background: var(--ink); color: white; border-radius: 10px;
-      text-align: center; padding: 0.4rem 0.25rem; line-height: 1.1;
-    }
-    .tl-day small { display: block; font-size: 0.55rem; opacity: 0.6; text-transform: uppercase; }
-    .tl-day strong { font-size: 1rem; }
-    .tl-icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      display: grid; place-items: center; font-size: 1rem;
-    }
-    .tl-icon.email { background: #dbeafe; }
-    .tl-icon.phone { background: #d1fae5; }
-    .tl-icon.linkedin { background: #e0e7ff; }
-    .tl-content h4 { font-size: 0.88rem; margin-bottom: 0.2rem; }
-    .tl-content p { font-size: 0.78rem; color: var(--ink-muted); }
-    .tone-tag {
-      display: inline-block; font-size: 0.65rem; font-weight: 600;
-      padding: 0.15rem 0.45rem; border-radius: 999px; margin-right: 0.25rem;
-      background: #f1f5f4; color: var(--ink-muted);
-    }
-
-    /* ── Personas ── */
-    .persona {
-      border-width: 2px; border-style: solid; border-radius: var(--radius);
-      padding: 1.1rem; background: white; display: flex; flex-direction: column; gap: 0.75rem;
-    }
-    .persona h4 { font-size: 0.85rem; }
-    .persona ul { list-style: none; flex: 1; }
-    .persona li {
-      font-size: 0.78rem; color: var(--ink-muted); padding: 0.25rem 0 0.25rem 1rem;
-      position: relative;
-    }
-    .persona li::before {
-      content: ""; position: absolute; left: 0; top: 0.55rem;
-      width: 5px; height: 5px; border-radius: 50%;
-    }
-    .persona .cta {
-      font-size: 0.75rem; font-weight: 600; font-style: italic;
-      padding-top: 0.65rem; border-top: 1px solid var(--border);
-    }
-    .persona.blue { border-color: #bfdbfe; } .persona.blue li::before { background: #3b82f6; } .persona.blue .cta { color: #2563eb; }
-    .persona.green { border-color: #a7f3d0; } .persona.green li::before { background: #10b981; } .persona.green .cta { color: #059669; }
-    .persona.orange { border-color: #fed7aa; } .persona.orange li::before { background: #f97316; } .persona.orange .cta { color: #ea580c; }
-    .persona.purple { border-color: #ddd6fe; } .persona.purple li::before { background: #8b5cf6; } .persona.purple .cta { color: #7c3aed; }
-
-    /* ── Flowchart ── */
-    .flow-wrap {
-      background: #f8faf9; border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.5rem; overflow-x: auto;
-    }
-    .flow { min-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 0; }
-    .flow-node {
-      padding: 0.65rem 1.25rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
-      text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .flow-node.start { background: var(--indigo); color: white; border-radius: 16px; }
-    .flow-node.dark { background: var(--ink); color: white; }
-    .flow-node.diamond-wrap { padding: 1rem 0; }
-    .flow-diamond {
-      width: 88px; height: 88px; background: #fffbeb; border: 2px solid #fbbf24;
-      transform: rotate(45deg); border-radius: 8px; margin: 0 auto;
-    }
-    .flow-diamond span {
-      display: block; transform: rotate(-45deg);
-      font-size: 0.7rem; font-weight: 700; color: #92400e;
-      padding: 1.35rem 0.5rem; text-align: center; line-height: 1.2;
-    }
-    .flow-connector { width: 2px; height: 18px; background: #d1ddd8; }
-    .flow-personas {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
-      width: 100%; margin: 0.5rem 0;
-    }
-    .flow-p-card {
-      font-size: 0.68rem; padding: 0.55rem; border-radius: 10px; border: 1px solid;
-      line-height: 1.35;
-    }
-    .flow-outcomes {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem;
-      width: 100%;
-    }
-    .flow-out {
-      font-size: 0.62rem; padding: 0.5rem; border-radius: 8px; border: 1px solid;
-      line-height: 1.3;
-    }
-    .flow-node.success { background: var(--emerald); color: white; border-radius: 16px; }
-
-    /* ── ML loops ── */
-    .loop-card { border-width: 2px; border-style: solid; border-radius: var(--radius); padding: 1rem; background: white; }
-    .loop-card h4 { font-size: 0.88rem; margin-bottom: 0.4rem; }
-    .loop-card p { font-size: 0.78rem; color: var(--ink-muted); margin-bottom: 0.6rem; }
-    .loop-example {
-      font-size: 0.72rem; font-style: italic; color: var(--ink-muted);
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 0.65rem;
-    }
-
-    /* ── Copy button ── */
-    .copy-row { display: flex; align-items: flex-start; gap: 0.5rem; margin-top: 0.5rem; }
-    .copy-btn {
-      border: 1px solid var(--border); background: white; cursor: pointer;
-      font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.6rem;
-      border-radius: 6px; color: var(--ink-muted); flex-shrink: 0;
-    }
-    .copy-btn.copied { background: var(--accent-light); color: var(--accent-dark); border-color: #a7d9c9; }
-
-    /* ── Footer ── */
-    footer {
-      text-align: center; padding: 2rem 1.5rem;
-      font-size: 0.75rem; color: var(--ink-soft);
-      border-top: 1px solid var(--border);
-    }
-
-    @media (max-width: 768px) {
-      .topnav { padding: 0 1rem; }
-      .nav-links { display: none; }
-      .account-header { grid-template-columns: 1fr auto; }
-      .account-header .score-badge { display: none; }
-      .flow-personas, .flow-outcomes { grid-template-columns: 1fr 1fr; }
-    }
-
-    @media print {
-      .topnav, .tabs, .filter-bar, .copy-btn { display: none !important; }
-      .hero { break-inside: avoid; }
-      .account-body { display: block !important; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valerie — BDR Assignment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,900;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"DM Sans",system-ui,sans-serif;background:#EDEAE4;color:#111;-webkit-font-smoothing:antialiased;}
+button{font-family:"DM Sans",system-ui,sans-serif;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+.app{min-height:100vh;display:flex;flex-direction:column;}
+.header{position:sticky;top:0;z-index:200;background:rgba(237,234,228,0.95);backdrop-filter:blur(8px);border-bottom:1px solid #DDD9D2;padding:0 40px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.header-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.header-title{font-size:15px;font-weight:700;color:#111;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.header-meta{font-size:12px;color:#999;white-space:nowrap;}
+.btn-pill{background:#FFF;border:1px solid #DDD9D2;border-radius:999px;padding:6px 16px;font-size:13px;font-weight:600;color:#111;cursor:pointer;transition:background 0.15s;}
+.btn-pill:hover{background:#F5F2EC;}
+.btn-pill-sm{padding:6px 14px;font-size:12px;color:#555;}
+.btn-pill-ghost{background:none;border:1px solid #DDD9D2;border-radius:999px;padding:7px 16px;font-size:12px;color:#888;cursor:pointer;transition:background 0.15s;}
+.btn-pill-ghost:hover{background:#F5F2EC;}
+.main{flex:1;}
+.section-wrap{padding:60px 56px;max-width:1100px;margin:0 auto;}
+.section-wrap-narrow{max-width:960px;}
+.section-wrap-tight{max-width:880px;}
+.section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;}
+.section-num{font-size:48px;font-weight:700;color:#DDD;letter-spacing:-0.04em;}
+.section-title{font-size:48px;font-weight:700;color:#111;letter-spacing:-0.04em;line-height:1.05;}
+.section-lead{font-size:18px;color:#444;line-height:1.6;margin-bottom:48px;}
+.overview{padding:60px 56px 72px;max-width:1000px;margin:0 auto;}
+.overview h1{font-size:52px;font-weight:700;letter-spacing:-0.04em;line-height:1.05;margin-bottom:16px;max-width:720px;}
+.overview > p{font-size:18px;color:#444;line-height:1.6;max-width:580px;margin-bottom:52px;}
+.section-cards{display:flex;flex-direction:column;gap:8px;}
+.section-card{background:#FFF;border-radius:18px;padding:26px 30px;cursor:pointer;border:1px solid #E8E4DE;display:flex;align-items:center;gap:22px;transition:background 0.15s,border-color 0.15s;}
+.section-card:hover{background:#F7F5F1;border-color:#CAC6C0;}
+.section-card-num{font-size:26px;font-weight:700;color:#CCC;flex-shrink:0;width:50px;letter-spacing:-0.03em;}
+.section-card-body{flex:1;min-width:0;}
+.section-card-title{font-size:26px;font-weight:700;color:#111;letter-spacing:-0.02em;margin-bottom:4px;}
+.section-card-desc{font-size:15px;color:#666;line-height:1.5;}
+.section-card-tag{background:#F0EDE8;border-radius:999px;padding:6px 15px;font-size:12px;font-weight:600;color:#666;flex-shrink:0;}
+.section-card-arrow{font-size:22px;color:#CCC;flex-shrink:0;}
+.criteria-row{display:flex;align-items:center;gap:0;padding:20px 0;border-bottom:1px solid #E8E4DE;}
+.criteria-weight{width:72px;flex-shrink:0;font-size:28px;font-weight:900;color:#111;letter-spacing:-0.03em;}
+.criteria-bar-wrap{width:180px;flex-shrink:0;padding:0 20px;}
+.criteria-bar{height:6px;background:#E8E4DE;border-radius:999px;overflow:hidden;}
+.criteria-bar-fill{height:100%;background:#111;border-radius:999px;}
+.criteria-divider{width:1px;height:40px;background:#DDD9D2;flex-shrink:0;}
+.criteria-name{width:190px;flex-shrink:0;padding:0 24px;font-size:16px;font-weight:700;color:#111;}
+.criteria-desc{flex:1;font-size:15px;color:#555;line-height:1.55;}
+.criteria-total-row{display:flex;align-items:center;gap:0;padding:18px 0;}
+.dark-callout{margin-top:36px;background:#111;border-radius:16px;padding:22px 28px;font-size:15px;color:#AAA;line-height:1.6;}
+.dark-callout strong{color:#FFF;font-weight:700;}
+.account-card{background:#FFF;border-radius:18px;padding:22px 26px;border:1px solid #E8E4DE;margin-bottom:8px;}
+.account-top{display:flex;align-items:center;gap:18px;margin-bottom:12px;}
+.account-rank{font-size:20px;font-weight:700;color:#CCC;width:28px;flex-shrink:0;text-align:right;}
+.account-info{flex:1;min-width:0;}
+.account-name{font-size:20px;font-weight:700;letter-spacing:-0.01em;}
+.account-reason{font-size:13px;color:#AAA;margin-top:2px;}
+.account-score{font-size:36px;font-weight:900;letter-spacing:-0.04em;flex-shrink:0;}
+.account-tier{font-size:12px;font-weight:700;padding:6px 14px;border-radius:999px;white-space:nowrap;flex-shrink:0;}
+.account-bar-row{display:flex;align-items:center;gap:10px;padding-left:46px;}
+.account-bar-track{height:5px;background:#F0EDE8;border-radius:999px;flex:1;overflow:hidden;}
+.account-bar-fill{height:100%;border-radius:999px;transition:width 0.6s ease;}
+.tier-callout{background:#FFF;border-radius:16px;padding:18px 24px;border:1px solid #E8E4DE;display:flex;gap:14px;align-items:flex-start;margin-bottom:8px;}
+.tier-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.tier-callout-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.tier-callout-text{font-size:14px;color:#555;font-style:italic;line-height:1.55;}
+.target-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.target-card{background:#FFF;border-radius:20px;padding:32px 26px;border:1px solid #E8E4DE;}
+.target-card-num{font-size:52px;font-weight:900;color:#111;letter-spacing:-0.05em;line-height:1;margin-bottom:16px;}
+.target-card-title{font-size:17px;font-weight:700;margin-bottom:10px;}
+.target-card-text{font-size:14px;color:#555;line-height:1.65;}
+.stats-bar{background:#111;border-radius:20px;padding:28px 36px;display:flex;gap:0;align-items:stretch;}
+.stats-item{flex:1;padding:0 32px;}
+.stats-item:first-child{padding-left:0;padding-right:32px;}
+.stats-item:last-child{padding-right:0;padding-left:32px;}
+.stats-item-wide{flex:2;}
+.stats-divider{width:1px;background:#333;flex-shrink:0;}
+.stats-value{font-size:36px;font-weight:900;color:#FFF;letter-spacing:-0.04em;line-height:1;}
+.stats-label{font-size:12px;color:#666;margin-top:4px;}
+.score-btn{background:#111;color:#FFF;border:none;border-radius:16px;padding:18px 32px;font-size:17px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:12px;transition:background 0.15s;}
+.score-btn:disabled{background:#CCC;cursor:default;}
+.tool-tags{margin-top:10px;font-size:13px;color:#999;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tool-tag{background:#F0EDE8;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600;color:#777;}
+.buyer-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;}
+.buyer-card{border-radius:20px;padding:22px 18px;transition:border-color 0.15s;}
+.buyer-card:hover{border-color:#999!important;}
+.buyer-avatar{width:46px;height:46px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#FFF;margin-bottom:14px;}
+.buyer-score{display:inline-block;font-size:24px;font-weight:900;padding:4px 14px;border-radius:999px;margin-bottom:12px;letter-spacing:-0.02em;}
+.scan-badge{background:#F0EDE8;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 12px;margin-bottom:12px;}
+.scan-dot{width:7px;height:7px;border-radius:50%;background:#888;animation:pulse 0.8s ease-in-out infinite;}
+.scan-text{font-size:12px;font-weight:600;color:#888;}
+.buyer-name{font-size:14px;font-weight:700;color:#111;line-height:1.3;margin-bottom:4px;}
+.buyer-title{font-size:11px;color:#AAA;line-height:1.4;margin-bottom:10px;}
+.buyer-priority{background:#F0EDE8;border-radius:999px;padding:4px 11px;font-size:10px;font-weight:600;color:#777;display:inline-block;}
+.scoring-panel{background:#FFF;border-radius:20px;padding:30px 32px;border:2px solid #111;margin-bottom:12px;}
+.scoring-label{font-size:12px;font-weight:700;color:#AAA;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;}
+.scoring-name{font-size:24px;font-weight:700;color:#111;margin-bottom:24px;}
+.tool-row{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.tool-icon{font-size:18px;width:22px;flex-shrink:0;text-align:center;}
+.tool-name{font-size:16px;font-weight:600;min-width:180px;}
+.tool-detail{font-size:14px;color:#AAA;font-style:italic;}
+.countup-row{display:flex;align-items:baseline;gap:10px;padding-top:16px;border-top:1px solid #F0EDE8;}
+.countup-num{font-size:64px;font-weight:900;color:#111;letter-spacing:-0.05em;line-height:1;}
+.countup-denom{font-size:24px;color:#CCC;font-weight:700;}
+.countup-label{font-size:15px;color:#AAA;margin-left:4px;}
+.detail-panel{background:#FFF;border-radius:20px;padding:30px 32px;border:1px solid #E8E4DE;margin-bottom:12px;}
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:16px;}
+.detail-person{display:flex;align-items:center;gap:16px;}
+.detail-avatar{width:54px;height:54px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#FFF;flex-shrink:0;}
+.detail-name{font-size:24px;font-weight:700;color:#111;letter-spacing:-0.02em;}
+.detail-title{font-size:14px;color:#888;margin-top:2px;}
+.detail-score-badge{display:inline-block;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;margin-top:8px;}
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.detail-cell{background:#F5F3EF;border-radius:14px;padding:18px;}
+.detail-cell-label{font-size:10px;font-weight:700;color:#AAA;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+.detail-cell-text{font-size:14px;color:#333;line-height:1.6;}
+.bench-note{background:#FFF;border-radius:14px;padding:16px 22px;border:1px solid #E8E4DE;font-size:14px;color:#666;line-height:1.6;}
+.bench-note strong{color:#111;font-weight:700;}
+.timeline-wrap{position:relative;margin-bottom:36px;padding-bottom:12px;}
+.timeline-line{position:absolute;top:32px;left:calc(100%/14);right:calc(100%/14);height:2px;background:#E4E0DA;z-index:0;border-radius:999px;}
+.timeline-nodes{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;}
+.day-node{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex:1;padding:0 4px;transition:opacity 0.15s;}
+.day-node:hover{opacity:0.75;}
+.day-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;transition:all 0.15s;}
+.day-label{font-size:12px;font-weight:700;color:#444;text-align:center;}
+.day-channel{font-size:11px;color:#AAA;text-align:center;line-height:1.4;white-space:pre-line;}
+.day-summary{font-size:11px;color:#555;text-align:center;line-height:1.4;font-weight:500;}
+.campaign-panel{background:#FFF;border-radius:20px;padding:30px 32px;border:1px solid #E8E4DE;margin-bottom:12px;}
+.campaign-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
+.campaign-panel-title{font-size:20px;font-weight:700;color:#111;letter-spacing:-0.02em;}
+.msg-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.msg-tab{border:none;border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s,color 0.15s;}
+.msg-subject{background:#F5F3EF;border-radius:12px;padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.msg-subject-label{font-size:11px;font-weight:700;color:#AAA;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;}
+.msg-subject-text{font-size:15px;font-weight:600;color:#111;font-style:italic;}
+.msg-body-wrap{position:relative;}
+.msg-body{font-size:15px;color:#333;line-height:1.75;white-space:pre-wrap;background:#FAFAF8;border-radius:14px;padding:24px 26px;border:1px solid #EFECE6;}
+.copy-btn{position:absolute;top:12px;right:12px;background:#FFF;border:1px solid #DDD9D2;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:600;color:#555;cursor:pointer;transition:background 0.15s,border-color 0.15s;}
+.copy-btn:hover{background:#F5F2EC;border-color:#CAC6C0;}
+.copy-btn.copied{color:#16A34A;border-color:#16A34A;}
+.ab-note{background:#FFF;border-radius:16px;padding:18px 22px;border:1px solid #E8E4DE;display:flex;gap:14px;align-items:flex-start;}
+.ab-badge{background:#F0EDE8;border-radius:999px;padding:5px 13px;font-size:11px;font-weight:700;color:#777;flex-shrink:0;margin-top:1px;}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:36px;}
+.metric-card{background:#FFF;border-radius:18px;padding:22px;border:1px solid #E8E4DE;}
+.metric-card-label{font-size:11px;font-weight:700;color:#AAA;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;}
+.metric-variant{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.metric-variant:last-of-type{margin-bottom:12px;}
+.variant-a{background:#F0EDE8;border-radius:999px;padding:3px 10px;font-size:12px;color:#666;font-weight:700;flex-shrink:0;}
+.variant-b{background:#111;border-radius:999px;padding:3px 10px;font-size:12px;color:#FFF;font-weight:700;flex-shrink:0;}
+.metric-hint{font-size:12px;color:#AAA;}
+.funnel-row{background:#FFF;border-radius:14px;padding:16px 22px;border:1px solid #E8E4DE;display:flex;align-items:center;gap:16px;margin-bottom:7px;}
+.funnel-num{width:34px;height:34px;border-radius:50%;background:#F0EDE8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#888;flex-shrink:0;}
+.funnel-body{flex:1;}
+.funnel-name{font-size:15px;font-weight:700;}
+.funnel-sub{font-size:13px;color:#AAA;margin-left:12px;}
+.funnel-q{font-size:13px;color:#777;font-style:italic;}
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tools-col-title{font-size:15px;font-weight:700;margin-bottom:14px;}
+.tool-item{background:#FFF;border-radius:14px;padding:16px 20px;border:1px solid #E8E4DE;margin-bottom:7px;}
+.tool-item-name{font-size:15px;font-weight:700;}
+.tool-item-desc{font-size:13px;color:#AAA;margin-top:2px;line-height:1.5;}
+.question-card{background:#FFF;border-radius:16px;padding:22px;border:1px solid #E8E4DE;margin-bottom:8px;}
+.question-num{font-size:36px;font-weight:900;color:#111;letter-spacing:-0.04em;margin-bottom:8px;}
+.question-text{font-size:15px;color:#333;line-height:1.65;}
+.hidden{display:none!important;}
+@media(max-width:900px){
+  .header{padding:0 20px;flex-wrap:wrap;height:auto;min-height:56px;padding-top:10px;padding-bottom:10px;}
+  .header-meta{display:none;}
+  .overview,.section-wrap{padding:40px 24px 48px;}
+  .overview h1{font-size:36px;}
+  .section-num,.section-title{font-size:36px;}
+  .section-card{flex-wrap:wrap;padding:20px;}
+  .section-card-tag,.section-card-arrow{display:none;}
+  .criteria-row{flex-wrap:wrap;gap:8px;padding:16px 0;}
+  .criteria-weight{width:60px;font-size:22px;}
+  .criteria-bar-wrap{width:120px;padding:0;}
+  .criteria-divider{display:none;}
+  .criteria-name{width:auto;padding:0;font-size:15px;}
+  .criteria-desc{width:100%;padding-left:60px;font-size:14px;}
+  .target-grid{grid-template-columns:1fr;}
+  .stats-bar{flex-direction:column;gap:20px;padding:24px;}
+  .stats-divider{width:100%;height:1px;}
+  .stats-item,.stats-item-wide{padding:0!important;}
+  .buyer-grid{grid-template-columns:repeat(2,1fr);}
+  .detail-grid{grid-template-columns:1fr 1fr;}
+  .timeline-line{display:none;}
+  .timeline-nodes{flex-wrap:wrap;gap:16px;justify-content:center;}
+  .day-node{flex:0 0 calc(33.333% - 12px);}
+  .metrics-grid,.tools-grid{grid-template-columns:1fr;}
+  .account-top{flex-wrap:wrap;}
+  .account-score{font-size:28px;}
+}
+@media(max-width:520px){
+  .buyer-grid{grid-template-columns:1fr;}
+  .detail-grid{grid-template-columns:1fr;}
+  .day-node{flex:0 0 calc(50% - 8px);}
+  .funnel-row{flex-direction:column;align-items:flex-start;}
+  .funnel-sub{display:block;margin-left:0;margin-top:4px;}
+}
+</style>
 </head>
 <body>
+<div class="app">
+  <header class="header" id="header"></header>
+  <main class="main" id="main"></main>
+</div>
+<script>
+(function(){
+  const sectionData = [
+    { id:'methodology', num:'01', title:'Methodology', exposition:'How accounts were scored, selected, and sequenced against Valerie\'s ICP.', tag:'Framework' },
+    { id:'prioritization', num:'02', title:'Account Prioritization', exposition:'5 accounts scored. 2 qualify, 1 is strategic, 2 are disqualified as health systems.', tag:'Analysis' },
+    { id:'target', num:'03', title:'Why Elevate ENT', exposition:'One MSO, one buying committee, three reasons it scores highest — plus a live acquisition trigger.', tag:'Target Account' },
+    { id:'buyers', num:'04', title:'Buyer Map', exposition:'5 Director+ contacts. Run the AI score analysis, then click any contact to see their outreach profile.', tag:'5 Leads' },
+    { id:'campaign', num:'05', title:'14-Day Campaign', exposition:'Full multichannel sequence with every message, A/B tested. Click any day to read the copy.', tag:'Outreach' },
+    { id:'metrics', num:'06', title:'Testing & Metrics', exposition:'4 message variables A/B tested. 5 funnel metrics to measure and iterate the campaign.', tag:'Measurement' },
+    { id:'tools', num:'07', title:'Tools & Open Questions', exposition:'The full stack I\'d use at scale, plus 4 questions to sharpen the next campaign.', tag:'Operations' },
+  ];
 
-  <nav class="topnav">
-    <div class="brand">
-      <div class="brand-mark">VH</div>
-      <div class="brand-text">
-        <strong>Valerie Health</strong>
-        <span>BDR Campaign · PE Specialty Groups</span>
-      </div>
-    </div>
-    <div class="nav-links" id="navLinks">
-      <a href="#overview">Overview</a>
-      <a href="#product">Product</a>
-      <a href="#engine">Engine</a>
-      <a href="#accounts">Accounts</a>
-      <a href="#outreach">Outreach</a>
-      <a href="#system">System</a>
-    </div>
-  </nav>
+  const buyerData = [
+    { name:'Amy Verlsteffen', initials:'AV', title:'VP Operations (FL) / VP Patient Access', scoreBand:'high', priority:'1st Priority', role:'Owns all patient scheduling + contact centers across FL and TX.', trigger:'Actively building a contact-center strategy in each region.', angle:'Missed inbound calls and unfilled appointment slots.', hook:'Call-center + scheduling automation. Pilot one region, template across.' },
+    { name:'Michael Amerstein', initials:'MA', title:'Chief Operating Officer', scoreBand:'high', priority:'2nd Priority', role:'Owns front-office performance and standardization across 110 locations.', trigger:'Ex-COO Axia Women\'s Health, ex-CEO Peak Dental. Has scaled multi-site ops before.', angle:'Standardizing the front office as acquisitions stack up.', hook:'Full Valerie bundle at half the labor cost.' },
+    { name:'Corie Opdyke', initials:'CO', title:'VP Integration & Transformation', scoreBand:'high', priority:'3rd Priority', role:'Owns integration of every newly acquired practice.', trigger:'Active acquisition pace = perpetual front-office chaos.', angle:'Every new practice arrives with broken phones, fax, and scheduling.', hook:'A new practice runs on the Valerie model from week one.' },
+    { name:'Sylvain Foster', initials:'SF', title:'Chief Financial Officer', scoreBand:'mid', priority:'4th Priority', role:'Owns RCM, procurement, and decision support. The economic buyer.', trigger:'Front-office headcount grows in step with every new location.', angle:'Headcount scales linearly with locations — until Valerie.', hook:'Fax + referral automation with clear, measurable ROI.' },
+    { name:'Cliff Hogan', initials:'CH', title:'Chief Information Officer', scoreBand:'mid', priority:'Supporting Role', role:'Technical gatekeeper. Can block or enable.', trigger:'Standardizing front-office tech across mixed EMRs mid-integration.', angle:'Mixed EMRs across newly acquired practices.', hook:'Valerie layers on existing EMRs. No rip-and-replace.' },
+  ];
 
-  <div class="wrap">
+  const finalScores = [72, 71, 70, 64, 58];
 
-    <!-- HERO -->
-    <header class="hero" id="overview">
-      <div class="hero-inner">
-        <div class="hero-eyebrow">
-          <span>Go-to-Market Playbook</span>
-          <span>·</span>
-          <span>Interactive</span>
-        </div>
-        <h1>PE-Backed Specialty Groups Campaign</h1>
-        <p>
-          A disciplined outbound motion for Valerie Health — research PE-backed physician MSOs,
-          score accounts against ICP, and run a 14-day persona-driven sequence to book demos.
-        </p>
-        <div class="hero-stats">
-          <div class="hero-stat"><strong>5</strong><span>Target accounts in wave 1</span></div>
-          <div class="hero-stat"><strong>2</strong><span>CALL NOW priorities</span></div>
-          <div class="hero-stat"><strong>14</strong><span>Day outreach sequence</span></div>
-          <div class="hero-stat"><strong>4</strong><span>Buyer personas</span></div>
-        </div>
-      </div>
-    </header>
+  const toolSets = [
+    [{ name:'LinkedIn Sales Nav', detail:'found contact + 3 recent posts' }, { name:'Clay', detail:'enriched email + phone' }, { name:'Apollo', detail:'ICP fit score computed' }],
+    [{ name:'LinkedIn Sales Nav', detail:'found 8 mutual connections' }, { name:'Gong', detail:'matched talk track patterns' }, { name:'Apollo', detail:'verified Director+ role' }],
+    [{ name:'Clay', detail:'acquisition trigger detected' }, { name:'LinkedIn Sales Nav', detail:'confirmed active role' }, { name:'Web Scraping AI', detail:'Elevate press release found' }],
+    [{ name:'Apollo', detail:'RCM buyer pattern matched' }, { name:'LinkedIn Sales Nav', detail:'5 connections found' }, { name:'Clay', detail:'enriched RCM signals' }],
+    [{ name:'LinkedIn Sales Nav', detail:'technical gatekeeper flagged' }, { name:'Apollo', detail:'IT stack identified' }, { name:'Web Scraping AI', detail:'EMR vendor data scraped' }],
+  ];
 
-    <!-- PRODUCT -->
-    <section id="product">
-      <p class="section-label">What we sell</p>
-      <h2>Valerie Health — AI front office for specialty groups</h2>
-      <p class="lede">
-        Valerie automates referral management, fax/document processing, and patient scheduling
-        for independent and PE-backed physician groups. Embeds into existing EMRs in under 30 days —
-        no rip-and-replace.
-      </p>
-      <div class="grid-2">
-        <div class="card">
-          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;">Three products → three outreach angles</h3>
-          <ul style="font-size:0.82rem;color:var(--ink-muted);padding-left:1.1rem;display:flex;flex-direction:column;gap:0.4rem;">
-            <li><strong style="color:var(--ink)">Referral Automation</strong> — capture, classify, extract, verify, sync to EMR</li>
-            <li><strong style="color:var(--ink)">Fax &amp; Document Automation</strong> — classify, parse, route hundreds of doc types</li>
-            <li><strong style="color:var(--ink)">Automated Scheduling</strong> — rules-based booking, less phone burden</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3 style="font-size:0.95rem;margin-bottom:0.5rem;">ICP &amp; hard disqualifiers</h3>
-          <div class="pill-row">
-            <span class="pill">PE-backed MSO</span>
-            <span class="pill">10–200 physicians</span>
-            <span class="pill">Specialty physician</span>
-            <span class="pill">Multi-site complexity</span>
-            <span class="pill dq">No hospital systems</span>
-            <span class="pill dq">No IDNs / AMCs</span>
-          </div>
-          <p style="font-size:0.78rem;color:var(--ink-muted);margin-top:0.75rem;">
-            Hospitals are DQ'd <em>before</em> scoring — 12–18 month procurement cycles and committee buying make them a poor fit regardless of size.
-          </p>
-        </div>
-      </div>
-    </section>
+  const dayData = [
+    { day:1, label:'Day 1', channelLabel:'Email A/B\nLinkedIn', summary:'Open cold + connect', messages:[{ label:'Email · Version A (Formal)', subject:'quick thought on Elevate\'s new-site intake', body:'Hi Amy,\n\nI\'m reaching out because Elevate looks like one of the clearest fits for what we\'re building at Valerie.\n\nWhen ENT platforms add practices, the first operational strain is often not clinical capacity — it is the front office: faxes, referrals, call-backs, and scheduling follow-up that do not scale cleanly across sites.\n\nValerie helps independent specialty groups automate that work so teams can convert more patients without adding linear headcount.\n\nWorth 15 minutes this week? I can walk through where groups like Elevate usually lose patients between referral received and appointment booked.\n\nBest, Pushti' }, { label:'Email · Version B (Pattern Interrupt)', subject:'I was asked to reach out to you', body:'Hi Amy,\n\nI\'ll be straight about who asked — my own team did.\n\nWe\'re building Valerie, an AI front office for independent specialty groups, and when I mapped which platforms would benefit most, Elevate came up first.\n\nSo yes, this is a cold note, but there is a real reason behind it: my hunch is that the front office at newer Elevate practices is buried in faxes, referrals, and patient call-backs.\n\nGive me 15 minutes and I\'ll show you where patients are most likely slipping out before anyone gets them scheduled.\n\nBest, Pushti' }, { label:'LinkedIn Connect', subject:null, body:'Send a connection request with no note.' }] },
+    { day:3, label:'Day 3', channelLabel:'Call\nVoicemail', summary:'Cold call + voicemail', messages:[{ label:'Call Opener', subject:null, body:'Hey Amy, how are you doing?\n\n(High pitch — pattern interrupt.)\n\nListen, I\'ll be honest — this is a cold call, but I promise it is a well-researched cold call. I\'ll only take 30 seconds to explain why I called, and if it doesn\'t feel useful, feel free to hang up on me.' }, { label:'Voicemail', subject:null, body:'Hi Amy, it\'s Pushti from Valerie Health. If you have 15 minutes on Thursday, I can show you where patient demand may be leaking before it becomes booked visits.' }] },
+    { day:5, label:'Day 5', channelLabel:'Email A/B', summary:'Value angle — intake lag', messages:[{ label:'Email · Version A', subject:'the hidden cost of intake lag', body:'Hi Amy,\n\nBefore you scroll past this — hear me out.\n\nIn fast-growing specialty groups, patient demand often exists before the practice captures it. A referral comes in. A fax sits. A patient misses a call. A scheduler gets buried. None of that looks dramatic once, but across multiple ENT sites, it quietly turns into lost booked visits.\n\nValerie helps front-office teams process referrals, faxes, and scheduling work faster, with humans-in-the-loop where needed.\n\nWorth 15 minutes? Best, Pushti' }, { label:'Email · Version B', subject:'before you scroll past this', body:'(Same body — testing "before you scroll past this" vs. the formal subject line.)' }] },
+    { day:7, label:'Day 7', channelLabel:'LinkedIn', summary:'Curiosity message', messages:[{ label:'LinkedIn Message', subject:null, body:'Hi Amy, this isn\'t a pitch, I promise. Genuinely curious: when an ENT platform acquires as fast as Elevate, is front-office intake usually the first thing that strains, or am I overrating it?\n\nEven a one-word reply would help me understand the market better. And if I\'m right, I can show you where that intake layer may be leaking booked visits.' }] },
+    { day:9, label:'Day 9', channelLabel:'Call\nVoicemail', summary:'Final phone nudge', messages:[{ label:'Call + Voicemail', subject:null, body:'Hi Amy, Pushti again with Valerie. Last quick phone nudge from me. I still think Elevate is one of the clearest fits for what we\'re building, because the growth model depends on converting patient demand efficiently across sites.\n\nIf front-office intake is already solved, I\'m off base. If it is still uneven across newer practices, I think we can be useful. My number is [number].' }] },
+    { day:11, label:'Day 11', channelLabel:'Email A/B', summary:'Where platforms strain first', messages:[{ label:'Email · Version A', subject:'where specialty platforms usually feel it first', body:'Hi Amy,\n\nI almost didn\'t send this because it felt direct, but I think it is the right question.\n\nThe ENT groups one step ahead on the acquisition curve usually hit the same wall: front-office capacity at newer sites. The issue is rarely one big failure — it is usually small leakage across referral queues, fax handling, missed call-backs, and scheduling delays.\n\nValerie helps claw that capacity back without adding proportional headcount.\n\nCould I have 15 minutes this Thursday? Best, Pushti' }, { label:'Email · Version B', subject:'I almost didn\'t send this', body:'(Same body — testing "I almost didn\'t send this" vs. the formal variant.)' }] },
+    { day:14, label:'Day 14', channelLabel:'Breakup\nEmail', summary:'Breakup + leave open', messages:[{ label:'Email · Version A', subject:'should I close the loop?', body:'Hi Amy,\n\nNo reply usually means wrong time, wrong person, or wrong priority — all fair. I\'ll close the loop here.\n\nMy guess was that as Elevate scales, referral intake, faxes, and patient call-backs may become harder to standardize across practices.\n\nIf that is not a current priority, no worries. If it becomes one later, Valerie would be useful for converting more patient demand without adding proportional headcount.\n\nWe\'ve got your back. Best, Pushti' }, { label:'Email · Version B', subject:'I hate doing this', body:'(Same body — testing "I hate doing this" vs. the formal breakup variant.)' }] },
+  ];
 
-    <!-- ENGINE -->
-    <section id="engine">
-      <p class="section-label">Account intelligence</p>
-      <h2>Outbound Intelligence Engine</h2>
-      <p class="lede">Every account moves through research → classify → score → decide → outreach → feedback.</p>
+  const criteria = [
+    { weight:'30%', barPct:'100%', name:'ICP Fit', desc:'Independent provider group, MSO, or PE-backed platform — not a hospital or health system.' },
+    { weight:'25%', barPct:'83%', name:'Pain Match', desc:'High referral volume, fax-heavy workflows, high call volume, patient-conversion pressure.' },
+    { weight:'20%', barPct:'67%', name:'Buying Simplicity', desc:'Clear Director+ ops/growth buyer; limited enterprise procurement complexity.' },
+    { weight:'15%', barPct:'50%', name:'Growth Trigger', desc:'Multi-location growth, acquisitions, new-market expansion, scaling admin ops.' },
+    { weight:'10%', barPct:'33%', name:'Competitive Risk', desc:'Lower score if account already has a strong internal tech or practice-management layer.' },
+  ];
 
-      <div class="pipeline" style="margin-bottom:2rem;">
-        <div class="pipe-step"><div class="pipe-num">1</div><h4>Research</h4><p>Exa crawl: company site, LinkedIn, PitchBook, news, pain signals.</p></div>
-        <div class="pipe-step"><div class="pipe-num">2</div><h4>Classify</h4><p>ICP filter first. Hospital/system → auto-DQ. MSO vs federation model.</p></div>
-        <div class="pipe-step"><div class="pipe-num">3</div><h4>Score</h4><p>6 dimensions, 100 pts. Deterministic LLM scoring with source verification.</p></div>
-        <div class="pipe-step"><div class="pipe-num">4</div><h4>Decide</h4><p>≥80 CALL NOW · 60–79 SEQUENCE · &lt;60 deprioritize · DQ filtered.</p></div>
-        <div class="pipe-step"><div class="pipe-num">5</div><h4>Outreach</h4><p>14-day multi-channel sequence with persona-specific angles.</p></div>
-        <div class="pipe-step"><div class="pipe-num">6</div><h4>Feedback</h4><p>Score corrections, call outcomes, FAQ thumbs → calibration loops.</p></div>
-      </div>
+  const accounts = [
+    { rank:'1', name:'Elevate ENT Partners', total:95, tier:'Tier 1', tierColor:'#16A34A', tierBg:'#DCFCE7', nameColor:'#111', scoreColor:'#111', barColor:'#16A34A', barW:'95%', reason:'Best-fit MSO · 110 locations · active acquisition · single buying committee' },
+    { rank:'2', name:'Growth Orthopedics', total:90, tier:'Tier 1', tierColor:'#16A34A', tierBg:'#DCFCE7', nameColor:'#111', scoreColor:'#111', barColor:'#16A34A', barW:'90%', reason:'Strong MSO alignment · clear referral + scheduling pain · Director+ ops buyers' },
+    { rank:'3', name:'US Oncology Network', total:81, tier:'Tier 2', tierColor:'#D97706', tierBg:'#FEF3C7', nameColor:'#111', scoreColor:'#111', barColor:'#D97706', barW:'81%', reason:'Strong pain match · McKesson infrastructure adds buying complexity' },
+    { rank:'4', name:'Sutter Health', total:43, tier:'DQ', tierColor:'#DC2626', tierBg:'#FEE2E2', nameColor:'#BBB', scoreColor:'#CCC', barColor:'#E8D0D0', barW:'43%', reason:'Health system — excluded by Valerie\'s ICP definition' },
+    { rank:'5', name:'Baylor Scott & White', total:43, tier:'DQ', tierColor:'#DC2626', tierBg:'#FEE2E2', nameColor:'#BBB', scoreColor:'#CCC', barColor:'#E8D0D0', barW:'43%', reason:'Health system — excluded by Valerie\'s ICP definition' },
+  ];
 
-      <div class="grid-2">
-        <div class="card">
-          <h3 style="font-size:0.9rem;margin-bottom:1rem;">Scoring dimensions (100 pts)</h3>
-          <div id="scoreBars"></div>
-        </div>
-        <div class="card">
-          <h3 style="font-size:0.9rem;margin-bottom:1rem;">ICP signal weights</h3>
-          <div id="signalBars"></div>
-        </div>
-      </div>
-    </section>
+  let state = {
+    view: 'overview',
+    activeBuyer: null,
+    activeCampaignDay: null,
+    activeCampaignMsg: 0,
+    scoringPhase: 'idle',
+    currentScoringIdx: -1,
+    buyerScores: [null, null, null, null, null],
+    currentTools: [],
+    countUpValue: null,
+  };
 
-    <!-- ACCOUNTS -->
-    <section id="accounts">
-      <p class="section-label">Wave 1 targets</p>
-      <h2>Account scorecard</h2>
-      <p class="lede">Click any account to expand dimensions, evidence, and ranked contacts.</p>
+  let timers = [];
 
-      <div class="filter-bar" id="accountFilters">
-        <button class="filter-btn active" data-filter="ALL">All (5)</button>
-        <button class="filter-btn" data-filter="CALL NOW">Call Now (2)</button>
-        <button class="filter-btn" data-filter="SEQUENCE">Sequence (1)</button>
-        <button class="filter-btn" data-filter="DISQUALIFIED">Disqualified (2)</button>
-      </div>
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
-      <div class="accounts" id="accountList"></div>
-    </section>
-
-    <!-- OUTREACH -->
-    <section id="outreach">
-      <p class="section-label">Execution</p>
-      <h2>14-day campaign workflow</h2>
-
-      <div class="tabs" role="tablist">
-        <button class="tab-btn active" data-tab="sequence">Sequence</button>
-        <button class="tab-btn" data-tab="personas">Personas</button>
-        <button class="tab-btn" data-tab="workflow">Dynamic workflow</button>
-      </div>
-
-      <div class="tab-panel active" id="tab-sequence">
-        <div class="timeline" id="timeline"></div>
-      </div>
-
-      <div class="tab-panel" id="tab-personas">
-        <div class="grid-4" id="personaGrid"></div>
-      </div>
-
-      <div class="tab-panel" id="tab-workflow">
-        <div class="flow-wrap">
-          <div class="flow" id="flowchart"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SYSTEM -->
-    <section id="system">
-      <p class="section-label">Continuous improvement</p>
-      <h2>ML reinforcement loops</h2>
-      <p class="lede">Every BDR interaction is a training signal. The engine improves with each cycle.</p>
-      <div class="grid-2" id="mlLoops"></div>
-    </section>
-
-  </div>
-
-  <footer>
-    Valerie Health · PE Specialty Groups GTM · Built for BDR interview presentation
-  </footer>
-
-  <script>
-    const DIMENSIONS = [
-      { name: 'ICP Fit', weight: 30, color: '#10b981' },
-      { name: 'Workflow Pain', weight: 20, color: '#f59e0b' },
-      { name: 'Scale / Complexity', weight: 15, color: '#6366f1' },
-      { name: 'Buying Committee', weight: 15, color: '#3b82f6' },
-      { name: 'Growth Pressure', weight: 10, color: '#8b5cf6' },
-      { name: 'Messaging Fit', weight: 10, color: '#ec4899' },
-    ];
-
-    const SIGNALS = [
-      { name: 'Not hospital / health system', score: 15 },
-      { name: 'PE-backed', score: 12 },
-      { name: 'Target specialty match', score: 11 },
-      { name: 'Multi-location', score: 9 },
-      { name: 'Named COO / ops leader', score: 8 },
-      { name: 'Headcount 50–500', score: 8 },
-      { name: 'Recent funding / M&A', score: 7 },
-    ];
-
-    const ACCOUNTS = [
-      {
-        name: 'Elevate ENT Partners',
-        domain: 'elevateent.com',
-        industry: 'ENT / Specialty MSO',
-        pe: 'Audax Private Equity',
-        scale: '170+ physicians · 110+ locations · TX, FL, LA',
-        score: 96,
-        status: 'CALL NOW',
-        summary: 'Textbook ICP. Active M&A creates recurring front-office standardization pain. Named buying committee maps 1:1 to Valerie products.',
-        dimensions: [
-          ['ICP Fit', 29, 30], ['Workflow Pain', 18, 20], ['Scale', 14, 15],
-          ['Buying Committee', 15, 15], ['Growth Pressure', 10, 10], ['Messaging', 10, 10],
-        ],
-        contacts: [
-          { rank: 1, name: 'Amy Verlsteffen', title: 'VP Patient Access / Ops (FL)', hook: 'Owns scheduling + contact centers — exact Valerie workflows.' },
-          { rank: 2, name: 'Michael Amerstein', title: 'COO', hook: 'Executive sponsor for front-office standardization across 110 sites.' },
-          { rank: 3, name: 'Corie Opdyke', title: 'VP Integration & Transformation', hook: 'Sees every broken process when a practice joins.' },
-          { rank: 4, name: 'Sylvain Foster', title: 'CFO', hook: 'Economic buyer — labor cost scales with locations.' },
-          { rank: 5, name: 'Cliff Hogan', title: 'CIO', hook: 'Technical gatekeeper — EMR overlay, not rip-and-replace.' },
-        ],
-      },
-      {
-        name: 'The US Oncology Network',
-        domain: 'usoncology.com',
-        industry: 'Oncology / Independent Practice Network',
-        pe: 'McKesson Corporation',
-        scale: '2,500+ providers · 600+ sites · ~31 states',
-        score: 81,
-        status: 'CALL NOW',
-        summary: 'Maximum workflow pain (fax, prior auth, referrals) but murky decision path — McKesson central vs practice-level. Target Texas Oncology first.',
-        dimensions: [
-          ['ICP Fit', 24, 30], ['Workflow Pain', 19, 20], ['Scale', 15, 15],
-          ['Buying Committee', 7, 15], ['Growth Pressure', 9, 10], ['Messaging', 7, 10],
-        ],
-        contacts: [
-          { rank: 1, name: 'Network Development (verify)', title: 'VP Network Development', hook: 'Entry for practice onboarding — redirect to large affiliate.' },
-          { rank: 2, name: 'Practice Operations (verify)', title: 'VP Practice Operations', hook: 'Workflow pain felt at practice level — test account before network.' },
-        ],
-      },
-      {
-        name: 'Growth Orthopedics',
-        domain: 'growthorthopedics.com',
-        industry: 'Orthopedics / MSO',
-        pe: 'Trivest Partners',
-        scale: '8 practices · ~120 physicians · KY, TX',
-        score: 70,
-        status: 'SEQUENCE',
-        summary: 'Valid ICP type but explicitly decentralizes front/back office. Pursue only if model shifts toward centralization.',
-        dimensions: [
-          ['ICP Fit', 27, 30], ['Workflow Pain', 13, 20], ['Scale', 8, 15],
-          ['Buying Committee', 8, 15], ['Growth Pressure', 7, 10], ['Messaging', 7, 10],
-        ],
-        contacts: [
-          { rank: 1, name: 'Peter McCann', title: 'CEO', hook: 'Built federation model — would need to centralize to use Valerie.' },
-        ],
-      },
-      {
-        name: 'Baylor Scott & White Health',
-        domain: 'bswhealth.com',
-        industry: 'Health System / Hospital Network',
-        pe: 'Nonprofit',
-        scale: '50+ hospitals · 50,000+ employees',
-        score: 0,
-        status: 'DISQUALIFIED',
-        summary: 'Nonprofit hospital health system. Hard ICP violation — eliminated before scoring.',
-        dimensions: [],
-        contacts: [],
-      },
-      {
-        name: 'Sutter Health',
-        domain: 'sutterhealth.org',
-        industry: 'Health System / Hospital Network',
-        pe: 'Nonprofit',
-        scale: '24–27 hospitals · Northern California',
-        score: 0,
-        status: 'DISQUALIFIED',
-        summary: 'Same hard DQ as Baylor — hospital systems excluded regardless of size.',
-        dimensions: [],
-        contacts: [],
-      },
-    ];
-
-    const TIMELINE = [
-      { day: 1, channel: 'email', touch: 'Intro Email A/B Test', tones: ['formal', 'informal'], goal: 'Start conversation with relevance' },
-      { day: 3, channel: 'phone', touch: 'Call + Voicemail', tones: ['conversational'], goal: 'Add human touch, ask 1 key question' },
-      { day: 5, channel: 'email', touch: 'Follow-up Email (Business Cost)', tones: ['formal', 'informal'], goal: 'Quantify the hidden cost' },
-      { day: 8, channel: 'linkedin', touch: 'LinkedIn Message', tones: ['conversational'], goal: 'Soft question, not a pitch' },
-      { day: 10, channel: 'phone', touch: 'Call + Voicemail', tones: ['conversational'], goal: 'Try to connect live' },
-      { day: 12, channel: 'email', touch: 'Peer Pattern Email', tones: ['formal', 'informal'], goal: 'Share peer insight + value' },
-      { day: 14, channel: 'email', touch: 'Breakup / Close Loop', tones: ['formal'], goal: 'Close respectfully, leave door open' },
-    ];
-
-    const PERSONAS = [
-      { color: 'blue', title: 'COO / Ops / Integration', points: ['New practice onboarding', 'Workflow standardization', 'Site-level inconsistency', 'Reduce manual work'], cta: 'Show where intake breaks during integration' },
-      { color: 'green', title: 'CFO / Finance', points: ['Labor cost', 'Missed booked visits', 'Margin protection', 'Cost of unworked referrals'], cta: 'Walk you through the patient-loss math' },
-      { color: 'orange', title: 'Patient Access / Rev Cycle', points: ['Referral queues', 'Fax processing', 'Call-back speed', 'Appointment conversion'], cta: 'Compare notes on where referrals slow down' },
-      { color: 'purple', title: 'CEO / President', points: ['Scaling the platform', 'Protect growth from ops drag', 'Independent-practice success', 'Acquisition integration'], cta: 'Show how front-office automation supports scale' },
-    ];
-
-    const ML_LOOPS = [
-      { color: '#10b981', title: 'Score Corrections', desc: 'BDR adjusts dimension scores in pipeline. Delta saved as training signal.', example: 'Lowering Buying Committee 15→10 for decision-fragmentation teaches the model to score similar accounts lower.' },
-      { color: '#3b82f6', title: 'Call Outcomes', desc: 'Picked up / No answer / Voicemail / Wrong person — logged per contact per day.', example: 'Which sequence day has highest pickup? Which persona answers? Feed into call timing.' },
-      { color: '#f59e0b', title: 'FAQ Effectiveness', desc: 'Playbook objection responses rated worked/didn\'t after each call.', example: 'High-thumbs answers surface first. Low-thumbs get flagged for revision.' },
-      { color: '#8b5cf6', title: 'Engagement Signals', desc: 'Email opens, LinkedIn accepts, reply persona — refine persona-priority logic.', example: 'If Patient Access replies 2× more than CEO across 50 touches, re-rank persona priority.' },
-    ];
-
-    const FLOW_PERSONAS = [
-      { title: 'COO / Ops', sub: 'Integration', angle: 'New-site intake standardization', bg: '#eff6ff', accent: '#3b82f6' },
-      { title: 'CFO', sub: 'Revenue Cycle', angle: 'Missed visits + labor leverage', bg: '#f0fdf4', accent: '#10b981' },
-      { title: 'Patient Access', sub: 'Rev Cycle', angle: 'Referrals, faxes, scheduling', bg: '#fff7ed', accent: '#f97316' },
-      { title: 'CEO', sub: 'Executive', angle: 'Scale without admin drag', bg: '#faf5ff', accent: '#8b5cf6' },
-    ];
-
-    const FLOW_OUTCOMES = [
-      { signal: 'Opened, No Reply', action: 'Day 5 — Pattern interrupt', bg: '#f8fafc', border: '#e2e8f0' },
-      { signal: 'No Open', action: 'Cleaner operational subject', bg: '#fffbeb', border: '#fde68a' },
-      { signal: 'LinkedIn Accepted', action: 'Soft question — no pitch', bg: '#eff6ff', border: '#bfdbfe' },
-      { signal: 'Call Connected', action: 'Run discovery opener', bg: '#ecfdf5', border: '#a7f3d0' },
-      { signal: 'Wrong Person', action: 'Find owner + restart', bg: '#f1f5f9', border: '#cbd5e1' },
-    ];
-
-    function statusClass(s) {
-      if (s === 'CALL NOW') return 'status-call';
-      if (s === 'SEQUENCE') return 'status-seq';
-      return 'status-dq';
+  function setState(updates) {
+    if (typeof updates === 'function') {
+      Object.assign(state, updates(state));
+    } else {
+      Object.assign(state, updates);
     }
+    render();
+  }
 
-    function renderBars(containerId, items, valueKey, maxKey) {
-      const el = document.getElementById(containerId);
-      el.innerHTML = items.map(item => {
-        const val = item[valueKey];
-        const max = maxKey ? item[maxKey] : Math.max(...items.map(i => i[valueKey]));
-        const pct = (val / max) * 100;
-        const color = item.color || '#0d6e5b';
-        return `<div class="score-row">
-          <div class="score-meta"><strong>${item.name}</strong><span>${val}${maxKey ? '' : ' pts'}</span></div>
-          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
-        </div>`;
-      }).join('');
+  function goBack() {
+    setState({ view:'overview', activeBuyer:null, activeCampaignDay:null });
+  }
+
+  function goToSection(id) {
+    setState({ view:id, activeBuyer:null, activeCampaignDay:null, activeCampaignMsg:0 });
+  }
+
+  function goPrev() {
+    const idx = sectionData.findIndex(s => s.id === state.view);
+    if (idx > 0) goToSection(sectionData[idx - 1].id);
+  }
+
+  function goNext() {
+    const idx = sectionData.findIndex(s => s.id === state.view);
+    if (idx >= 0 && idx < sectionData.length - 1) goToSection(sectionData[idx + 1].id);
+  }
+
+  function startScoring() {
+    timers.forEach(t => { try { clearTimeout(t); clearInterval(t); } catch(e){} });
+    timers = [];
+    setState({ scoringPhase:'running', buyerScores:[null,null,null,null,null], currentScoringIdx:0, currentTools:[], countUpValue:null, activeBuyer:null });
+    let delay = 100;
+    for (let i = 0; i < 5; i++) {
+      const tools = toolSets[i];
+      const finalScore = finalScores[i];
+      const bd = delay;
+      timers.push(setTimeout(() => setState({ currentScoringIdx:i, currentTools:[{ ...tools[0], status:'scanning' }], countUpValue:null }), bd));
+      timers.push(setTimeout(() => setState({ currentTools:[{ ...tools[0], status:'done' }, { ...tools[1], status:'scanning' }] }), bd + 450));
+      timers.push(setTimeout(() => setState({ currentTools:[{ ...tools[0], status:'done' }, { ...tools[1], status:'done' }, { ...tools[2], status:'scanning' }] }), bd + 900));
+      timers.push(setTimeout(() => {
+        setState({ currentTools:[{ ...tools[0], status:'done' }, { ...tools[1], status:'done' }, { ...tools[2], status:'done' }], countUpValue:0 });
+        let count = 0;
+        const steps = 25;
+        const iv = setInterval(() => {
+          count += Math.ceil(finalScore / steps);
+          if (count >= finalScore) { count = finalScore; clearInterval(iv); }
+          setState({ countUpValue:count });
+        }, 600 / steps);
+        timers.push(iv);
+      }, bd + 1350));
+      timers.push(setTimeout(() => {
+        setState(prev => {
+          const ns = [...prev.buyerScores];
+          ns[i] = finalScore;
+          return { buyerScores:ns, countUpValue:null };
+        });
+      }, bd + 2100));
+      delay += 2300;
     }
+    timers.push(setTimeout(() => {
+      setState({ scoringPhase:'done', currentScoringIdx:-1, currentTools:[], countUpValue:null });
+    }, delay + 200));
+  }
 
-    function renderAccounts(filter = 'ALL') {
-      const list = document.getElementById('accountList');
-      const filtered = filter === 'ALL' ? ACCOUNTS : ACCOUNTS.filter(a => a.status === filter);
-      list.innerHTML = filtered.map((a, i) => `
-        <article class="account" data-status="${a.status}">
-          <div class="account-header" onclick="toggleAccount(${i})" role="button" aria-expanded="false">
-            <div>
-              <h3>${a.name}</h3>
-              <p class="sub">${a.industry} · ${a.pe} · ${a.scale}</p>
-            </div>
-            <span class="score-badge" style="color:${a.score >= 80 ? 'var(--emerald)' : a.score >= 60 ? 'var(--amber)' : 'var(--red)'}">${a.score}</span>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-              <span class="status-badge ${statusClass(a.status)}">${a.status}</span>
-              <span class="account-chevron">▼</span>
-            </div>
-          </div>
-          <div class="account-body">
-            <p style="font-size:0.82rem;color:var(--ink-muted);margin-bottom:0.75rem;">${a.summary}</p>
-            ${a.dimensions.length ? `<div class="dim-grid">${a.dimensions.map(([n,s,m]) =>
-              `<div class="dim-chip"><strong>${s}/${m}</strong> ${n}</div>`).join('')}</div>` : ''}
-            ${a.contacts.length ? `<h4 style="font-size:0.8rem;margin-bottom:0.5rem;">Ranked contacts</h4>
-              <ul class="contact-list">${a.contacts.map(c => `
-                <li><span class="rank">#${c.rank}</span><strong>${c.name}</strong> — ${c.title}<br>
-                <span style="color:var(--ink-muted)">${c.hook}</span>
-                <div class="copy-row"><button class="copy-btn" onclick="copyText(event,'${c.hook.replace(/'/g,"\\'")}')">Copy hook</button></div></li>`).join('')}</ul>` : ''}
-          </div>
-        </article>
-      `).join('');
-      window._filteredAccounts = filtered;
+  async function copyMessage(subject, body, btn) {
+    let text = body;
+    if (subject) text = 'Subject: ' + subject + '\n\n' + body;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch(e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
     }
-
-    function toggleAccount(i) {
-      const cards = document.querySelectorAll('.account');
-      const card = cards[i];
-      const open = card.classList.toggle('open');
-      card.querySelector('.account-header').setAttribute('aria-expanded', open);
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
     }
+  }
 
-    function renderTimeline() {
-      const icons = { email: '✉️', phone: '📞', linkedin: 'in' };
-      document.getElementById('timeline').innerHTML = TIMELINE.map(t => `
-        <div class="tl-row">
-          <div class="tl-day"><small>Day</small><strong>${t.day}</strong></div>
-          <div class="tl-icon ${t.channel}">${icons[t.channel]}</div>
-          <div class="tl-content">
-            <h4>${t.touch}</h4>
-            <div>${t.tones.map(x => `<span class="tone-tag">${x}</span>`).join('')}</div>
-            <p>${t.goal}</p>
-          </div>
-        </div>
-      `).join('');
+  function renderHeader() {
+    const v = state.view;
+    const showBack = v !== 'overview';
+    const idx = sectionData.findIndex(s => s.id === v);
+    const prevSect = idx > 0 ? sectionData[idx - 1] : null;
+    const nextSect = idx >= 0 && idx < sectionData.length - 1 ? sectionData[idx + 1] : null;
+    document.getElementById('header').innerHTML =
+      '<div class="header-left">' +
+        (showBack ? '<button class="btn-pill" id="btn-back">← Overview</button>' : '') +
+        '<span class="header-title">Valerie — BDR Assignment</span>' +
+      '</div>' +
+      '<div class="header-right">' +
+        (showBack ? (
+          (prevSect ? '<button class="btn-pill btn-pill-sm" id="btn-prev">← ' + esc(prevSect.num) + '</button>' : '') +
+          (nextSect ? '<button class="btn-pill btn-pill-sm" id="btn-next">' + esc(nextSect.num) + ' →</button>' : '')
+        ) : '') +
+        '<span class="header-meta">Prepared by Pushti · June 2026</span>' +
+      '</div>';
+    const back = document.getElementById('btn-back');
+    if (back) back.onclick = goBack;
+    const prev = document.getElementById('btn-prev');
+    if (prev) prev.onclick = goPrev;
+    const next = document.getElementById('btn-next');
+    if (next) next.onclick = goNext;
+  }
+
+  function renderOverview() {
+    return '<div class="overview">' +
+      '<h1>Account Prioritization &amp; Outbound Campaign</h1>' +
+      '<p>A go-to-market exercise for Valerie — scored five accounts, selected the best fit, mapped the buying committee, and built a full 14-day outbound sequence.</p>' +
+      '<div class="section-cards">' +
+        sectionData.map(s =>
+          '<div class="section-card" data-section="' + s.id + '">' +
+            '<span class="section-card-num">' + esc(s.num) + '</span>' +
+            '<div class="section-card-body">' +
+              '<div class="section-card-title">' + esc(s.title) + '</div>' +
+              '<div class="section-card-desc">' + esc(s.exposition) + '</div>' +
+            '</div>' +
+            '<div class="section-card-tag">' + esc(s.tag) + '</div>' +
+            '<div class="section-card-arrow">→</div>' +
+          '</div>'
+        ).join('') +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderMethodology() {
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">01</span><h2 class="section-title">Methodology</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">Five criteria, each weighted. Accounts scored independently, then ranked. Total = 100%. The highest-scoring fit drove the full buyer map and campaign.</p>' +
+      criteria.map(c =>
+        '<div class="criteria-row">' +
+          '<div class="criteria-weight">' + esc(c.weight) + '</div>' +
+          '<div class="criteria-bar-wrap"><div class="criteria-bar"><div class="criteria-bar-fill" style="width:' + c.barPct + ';"></div></div></div>' +
+          '<div class="criteria-divider"></div>' +
+          '<div class="criteria-name">' + esc(c.name) + '</div>' +
+          '<div class="criteria-desc">' + esc(c.desc) + '</div>' +
+        '</div>'
+      ).join('') +
+      '<div class="criteria-total-row">' +
+        '<div class="criteria-weight" style="font-size:22px;">100%</div>' +
+        '<div class="criteria-bar-wrap"><div class="criteria-bar"><div class="criteria-bar-fill" style="width:100%;"></div></div></div>' +
+        '<div class="criteria-divider"></div>' +
+        '<div style="padding:0 24px;font-size:15px;font-weight:700;color:#888;">Total weight · 5 criteria</div>' +
+      '</div>' +
+      '<div class="dark-callout"><strong>At scale:</strong> Clay · Apollo · LinkedIn Sales Nav · HubSpot/Outreach · Lavender · Gong · Airtable — for enrichment, sequencing, scoring, and iteration.</div>' +
+    '</div>';
+  }
+
+  function renderPrioritization() {
+    return '<div class="section-wrap section-wrap-tight">' +
+      '<div class="section-head"><span class="section-num">02</span><h2 class="section-title">Account Prioritization</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">5 accounts, scored against Valerie\'s ICP. 2 qualify, 1 is strategically complex, 2 are health systems — disqualified by definition.</p>' +
+      accounts.map(a =>
+        '<div class="account-card">' +
+          '<div class="account-top">' +
+            '<div class="account-rank">' + esc(a.rank) + '</div>' +
+            '<div class="account-info">' +
+              '<div class="account-name" style="color:' + a.nameColor + ';">' + esc(a.name) + '</div>' +
+              '<div class="account-reason">' + esc(a.reason) + '</div>' +
+            '</div>' +
+            '<div class="account-score" style="color:' + a.scoreColor + ';">' + a.total + '</div>' +
+            '<div class="account-tier" style="background:' + a.tierBg + ';color:' + a.tierColor + ';">' + esc(a.tier) + '</div>' +
+          '</div>' +
+          '<div class="account-bar-row">' +
+            '<div class="account-bar-track"><div class="account-bar-fill" style="background:' + a.barColor + ';width:' + a.barW + ';"></div></div>' +
+            '<div style="font-size:11px;color:#BBB;flex-shrink:0;">' + a.total + '/100</div>' +
+          '</div>' +
+        '</div>'
+      ).join('') +
+      '<div style="margin-top:28px;">' +
+        '<div class="tier-callout"><div class="tier-dot" style="background:#16A34A;"></div><div><div class="tier-callout-title">Tier 1 — Elevate ENT Partners &amp; Growth Orthopedics</div><div class="tier-callout-text">"You are scaling independent specialty practices. Valerie can help absorb admin volume without adding linear headcount."</div></div></div>' +
+        '<div class="tier-callout"><div class="tier-dot" style="background:#D97706;"></div><div><div class="tier-callout-title">Tier 2 — US Oncology Network</div><div class="tier-callout-text">"Position Valerie around specific workflow gaps rather than broad replacement of existing McKesson infrastructure."</div></div></div>' +
+        '<div class="tier-callout"><div class="tier-dot" style="background:#DC2626;"></div><div><div class="tier-callout-title" style="color:#AAA;">Disqualified — Sutter Health &amp; Baylor Scott &amp; White</div><div class="tier-callout-text" style="color:#AAA;font-style:normal;">Health systems — excluded by Valerie\'s ICP definition. Do not prioritize.</div></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderTarget() {
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">03</span><h2 class="section-title">Why Elevate ENT Wins</h2></div>' +
+      '<p class="section-lead" style="max-width:600px;">One MSO, one centralized back office, one buying committee. Three structural reasons it scores 95 out of 100 — and a live acquisition trigger that makes timing right now.</p>' +
+      '<div class="target-grid">' +
+        '<div class="target-card"><div class="target-card-num">01</div><div class="target-card-title">One account, not a federation</div><div class="target-card-text">A single MSO with a centralized back office — one buying committee, one clear owner for every Valerie product.</div></div>' +
+        '<div class="target-card"><div class="target-card-num">02</div><div class="target-card-title">Specialty pain = Valerie\'s products</div><div class="target-card-text">PCP referrals, faxed prior auths, high inbound call volume — fax, referral, and call-center automation with no stretch.</div></div>' +
+        '<div class="target-card"><div class="target-card-num">03</div><div class="target-card-title">A live acquisition trigger</div><div class="target-card-text">Actively expanding into LA and TN. Each deal brings integration chaos — and a VP of Integration &amp; Transformation exists to solve it.</div></div>' +
+      '</div>' +
+      '<div class="stats-bar">' +
+        '<div class="stats-item"><div class="stats-value">110</div><div class="stats-label">ENT locations</div></div>' +
+        '<div class="stats-divider"></div>' +
+        '<div class="stats-item stats-item-wide"><div class="stats-value">FL · TX · LA · TN</div><div class="stats-label">Active expansion states</div></div>' +
+        '<div class="stats-divider"></div>' +
+        '<div class="stats-item"><div class="stats-value">95/100</div><div class="stats-label">ICP fit score</div></div>' +
+        '<div class="stats-divider"></div>' +
+        '<div class="stats-item"><div class="stats-value">#1</div><div class="stats-label">Target account</div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderBuyers() {
+    const sp = state.scoringPhase;
+    const isIdle = sp === 'idle';
+    const isScoring = sp === 'running';
+    const isDone = sp === 'done';
+    const csIdx = state.currentScoringIdx;
+    const scoreBtnLabel = isIdle ? 'Run Score Analysis →' : (isScoring ? 'Analyzing…' : 'Re-run Analysis ↺');
+
+    let html = '<div class="section-wrap">' +
+      '<div class="section-head"><span class="section-num">04</span><h2 class="section-title">Buyer Map</h2></div>' +
+      '<p class="section-lead" style="max-width:640px;margin-bottom:36px;">5 Director+ contacts at Elevate ENT. Run the AI score analysis to rank them by pain ownership, influence, and urgency — then click any contact to see their outreach profile.</p>' +
+      '<div style="margin-bottom:28px;">' +
+        '<button class="score-btn" id="score-btn"' + (isScoring ? ' disabled' : '') + '>' + esc(scoreBtnLabel) + '</button>';
+
+    if (isIdle) {
+      html += '<div class="tool-tags">' +
+        ['Clay','LinkedIn Sales Nav','Apollo','Web Scraping AI','Gong'].map(t => '<span class="tool-tag">' + t + '</span>').join('') +
+        '<span style="color:#BBB;font-size:12px;">will be used to compute each score</span></div>';
     }
+    html += '</div><div class="buyer-grid">';
 
-    function renderPersonas() {
-      document.getElementById('personaGrid').innerHTML = PERSONAS.map(p => `
-        <div class="persona ${p.color}">
-          <h4>${p.title}</h4>
-          <ul>${p.points.map(pt => `<li>${pt}</li>`).join('')}</ul>
-          <p class="cta">"${p.cta}"</p>
-          <button class="copy-btn" onclick="copyText(event,'${p.cta.replace(/'/g,"\\'")}')">Copy CTA</button>
-        </div>
-      `).join('');
-    }
-
-    function renderFlowchart() {
-      document.getElementById('flowchart').innerHTML = `
-        <div class="flow-node start">Start: Target Account</div>
-        <div class="flow-connector"></div>
-        <div class="flow-node dark">Identify Persona</div>
-        <div class="flow-connector"></div>
-        <div class="flow-personas">${FLOW_PERSONAS.map(p => `
-          <div class="flow-p-card" style="background:${p.bg};border-color:${p.accent}44">
-            <strong style="color:${p.accent};font-size:0.7rem">${p.title}</strong><br>
-            <span style="color:#64748b">${p.sub}</span><br>${p.angle}
-          </div>`).join('')}</div>
-        <div class="flow-connector"></div>
-        <div class="flow-node dark">Day 1 — Email + LinkedIn</div>
-        <div class="flow-connector"></div>
-        <div class="flow-diamond"><span>Engagement<br>Signal?</span></div>
-        <div class="flow-connector"></div>
-        <div class="flow-outcomes">${FLOW_OUTCOMES.map(o => `
-          <div class="flow-out" style="background:${o.bg};border-color:${o.border}">
-            <strong>${o.signal}</strong><br>${o.action}
-          </div>`).join('')}</div>
-        <div class="flow-connector"></div>
-        <div class="flow-node" style="background:white;border:1px solid var(--border)">Days 8 → 10 → 12 → 14</div>
-        <div class="flow-connector"></div>
-        <div class="flow-node success">✓ Meeting Booked</div>
-      `;
-    }
-
-    function renderML() {
-      document.getElementById('mlLoops').innerHTML = ML_LOOPS.map(l => `
-        <div class="loop-card" style="border-color:${l.color}44">
-          <h4 style="color:${l.color}">${l.title}</h4>
-          <p>${l.desc}</p>
-          <div class="loop-example">${l.example}</div>
-        </div>
-      `).join('');
-    }
-
-    function copyText(e, text) {
-      e.stopPropagation();
-      navigator.clipboard.writeText(text).then(() => {
-        const btn = e.target;
-        btn.textContent = 'Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = btn.dataset.orig || 'Copy'; btn.classList.remove('copied'); }, 1500);
-      });
-    }
-
-    // Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      });
+    buyerData.forEach((b, i) => {
+      const lockedScore = state.buyerScores[i];
+      const isCurrent = csIdx === i && isScoring;
+      const cu = state.countUpValue;
+      const scored = lockedScore !== null && lockedScore !== undefined;
+      let scoreHtml = '';
+      if (scored) {
+        const bg = b.scoreBand === 'high' ? '#DCFCE7' : '#FEF9C3';
+        const col = b.scoreBand === 'high' ? '#16A34A' : '#D97706';
+        scoreHtml = '<div class="buyer-score" style="background:' + bg + ';color:' + col + ';">' + lockedScore + '</div>';
+      } else if (isCurrent && cu !== null) {
+        scoreHtml = '<div class="buyer-score" style="background:#E8E4DE;color:#888;">' + cu + '</div>';
+      } else if (isCurrent) {
+        scoreHtml = '<div class="scan-badge"><div class="scan-dot"></div><span class="scan-text">Scanning</span></div>';
+      }
+      const cardBg = isCurrent ? '#FAFAF8' : (state.activeBuyer === i ? '#F5F3EF' : '#FFF');
+      const cardBorder = isCurrent ? '2px solid #111' : (state.activeBuyer === i ? '2px solid #555' : '1px solid #E8E4DE');
+      const cursor = scored ? 'pointer' : 'default';
+      const priorityHtml = (scored || isDone) ? '<div class="buyer-priority">' + esc(b.priority) + '</div>' : '';
+      html += '<div class="buyer-card" data-buyer="' + i + '" style="background:' + cardBg + ';border:' + cardBorder + ';cursor:' + cursor + ';">' +
+        '<div class="buyer-avatar">' + esc(b.initials) + '</div>' + scoreHtml +
+        '<div class="buyer-name">' + esc(b.name) + '</div>' +
+        '<div class="buyer-title">' + esc(b.title) + '</div>' + priorityHtml + '</div>';
     });
+    html += '</div>';
 
-    // Account filters
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderAccounts(btn.dataset.filter);
-      });
+    if (isScoring && csIdx >= 0) {
+      const name = buyerData[csIdx].name;
+      html += '<div class="scoring-panel">' +
+        '<div class="scoring-label">Scoring</div>' +
+        '<div class="scoring-name">' + esc(name) + '</div>' +
+        state.currentTools.map(t => {
+          const done = t.status === 'done';
+          return '<div class="tool-row">' +
+            '<span class="tool-icon" style="color:' + (done ? '#16A34A' : '#999') + ';">' + (done ? '✓' : '⟳') + '</span>' +
+            '<span class="tool-name" style="color:' + (done ? '#111' : '#888') + ';">' + esc(t.name) + '</span>' +
+            '<span class="tool-detail">' + esc(t.detail) + '</span></div>';
+        }).join('');
+      if (state.countUpValue !== null) {
+        html += '<div class="countup-row">' +
+          '<span class="countup-num">' + state.countUpValue + '</span>' +
+          '<span class="countup-denom">/100</span>' +
+          '<span class="countup-label">ICP fit score</span></div>';
+      }
+      html += '</div>';
+    }
+
+    if (state.activeBuyer !== null) {
+      const b = buyerData[state.activeBuyer];
+      const score = finalScores[state.activeBuyer];
+      const scoreBg = b.scoreBand === 'high' ? '#DCFCE7' : '#FEF9C3';
+      const scoreCol = b.scoreBand === 'high' ? '#16A34A' : '#D97706';
+      html += '<div class="detail-panel">' +
+        '<div class="detail-header">' +
+          '<div class="detail-person">' +
+            '<div class="detail-avatar">' + esc(b.initials) + '</div>' +
+            '<div><div class="detail-name">' + esc(b.name) + '</div>' +
+            '<div class="detail-title">' + esc(b.title) + '</div>' +
+            '<div class="detail-score-badge" style="background:' + scoreBg + ';color:' + scoreCol + ';">Score ' + score + ' · ' + esc(b.priority) + '</div></div>' +
+          '</div>' +
+          '<button class="btn-pill-ghost" id="close-buyer">Close ×</button>' +
+        '</div>' +
+        '<div class="detail-grid">' +
+          ['Role','Trigger','Pain Angle','Hook'].map((label, li) => {
+            const keys = ['role','trigger','angle','hook'];
+            return '<div class="detail-cell"><div class="detail-cell-label">' + label + '</div><div class="detail-cell-text">' + esc(b[keys[li]]) + '</div></div>';
+          }).join('') +
+        '</div></div>';
+    }
+
+    html += '<div class="bench-note"><strong>Bench:</strong> Liz Rodriguez (President) — co-equal sponsor; use if Amerstein goes cold. Kelly Raible (CMO) — right owner if the patient-conversion angle leads.</div></div>';
+    return html;
+  }
+
+  function renderCampaign() {
+    const activeDayIndex = state.activeCampaignDay;
+    const activeDay = activeDayIndex !== null ? dayData[activeDayIndex] : null;
+    const activeMsgIdx = state.activeCampaignMsg ?? 0;
+    const activeMsg = activeDay ? (activeDay.messages[activeMsgIdx] ?? activeDay.messages[0]) : null;
+
+    let html = '<div class="section-wrap">' +
+      '<div class="section-head"><span class="section-num">05</span><h2 class="section-title">14-Day Campaign</h2></div>' +
+      '<p class="section-lead" style="max-width:680px;margin-bottom:40px;">7 touchpoints, 2 message styles A/B tested. Hypothesis: <em style="color:#333;">as Elevate adds ENT practices, patient demand leaks before it becomes a booked appointment.</em> Click any day node to read the full message.</p>' +
+      '<div class="timeline-wrap"><div class="timeline-line"></div><div class="timeline-nodes">' +
+      dayData.map((d, i) => {
+        const active = activeDayIndex === i;
+        return '<div class="day-node" data-day="' + i + '">' +
+          '<div class="day-circle" style="background:' + (active ? '#111' : '#FFF') + ';border:2px solid ' + (active ? '#111' : '#E4E0DA') + ';color:' + (active ? '#FFF' : '#111') + ';">' + d.day + '</div>' +
+          '<div class="day-label">' + esc(d.label) + '</div>' +
+          '<div class="day-channel">' + esc(d.channelLabel) + '</div>' +
+          '<div class="day-summary">' + esc(d.summary) + '</div></div>';
+      }).join('') +
+      '</div></div>';
+
+    if (activeDay) {
+      html += '<div class="campaign-panel">' +
+        '<div class="campaign-panel-header">' +
+          '<div class="campaign-panel-title">' + esc(activeDay.label) + ' — ' + esc(activeDay.summary) + '</div>' +
+          '<button class="btn-pill-ghost" id="close-campaign">Close ×</button>' +
+        '</div>' +
+        '<div class="msg-tabs">' +
+          activeDay.messages.map((m, i) =>
+            '<button class="msg-tab" data-msg="' + i + '" style="background:' + (activeMsgIdx === i ? '#111' : '#F0EDE8') + ';color:' + (activeMsgIdx === i ? '#FFF' : '#666') + ';">' + esc(m.label) + '</button>'
+          ).join('') +
+        '</div>';
+      if (activeMsg && activeMsg.subject) {
+        html += '<div class="msg-subject"><span class="msg-subject-label">Subject</span><span class="msg-subject-text">' + esc(activeMsg.subject) + '</span></div>';
+      }
+      html += '<div class="msg-body-wrap">' +
+        '<button class="copy-btn" id="copy-msg">Copy</button>' +
+        '<div class="msg-body" id="msg-body">' + esc(activeMsg ? activeMsg.body : '') + '</div></div></div>';
+    }
+
+    html += '<div class="ab-note"><div class="ab-badge">A/B TEST</div><div style="font-size:14px;color:#555;line-height:1.65;"><strong style="color:#111;font-weight:700;">Formal vs. Pattern Interrupt:</strong> Version A reads as more credible to senior healthcare buyers. Version B is more likely to earn opens and replies. The constant across both: patient demand is leaking before it becomes a booked appointment.</div></div></div>';
+    return html;
+  }
+
+  function renderMetrics() {
+    const tests = [
+      { label:'Subject Line', a:'"quick thought on Elevate\'s new-site intake"', b:'"I was asked to reach out to you"', hint:'→ Which earns the open' },
+      { label:'Call to Action', a:'"Worth 15 minutes this week?"', b:'"Give me 15 minutes and I\'ll show you the math"', hint:'→ Which earns the reply' },
+      { label:'Pain Framing', a:'"referral intake and scheduling delays"', b:'"patients slipping out before anyone calls them back"', hint:'→ Which language resonates' },
+      { label:'Persona Angle', a:'"standardizing front-office workflows"', b:'"where growth starts straining the desk"', hint:'→ Which problem feels urgent' },
+    ];
+    const funnel = [
+      { n:1, name:'Targeting', sub:'% of contacts matching Director+ ICP', q:'Did I pick the right buyers?' },
+      { n:2, name:'Attention', sub:'Email open rate + LinkedIn accept rate', q:'Are subject lines earning opens?' },
+      { n:3, name:'Relevance', sub:'Reply rate + positive reply rate', q:'Is the pain hypothesis resonating?' },
+      { n:4, name:'Conversion', sub:'Meetings booked', q:'Did the campaign create pipeline?' },
+      { n:5, name:'Learning', sub:'Objection themes + persona response rate', q:'How should the next sequence change?' },
+    ];
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">06</span><h2 class="section-title">Testing &amp; Metrics</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">4 message variables A/B tested across two styles. 5 funnel metrics — from targeting quality to pipeline created — tell me what\'s working and what to adjust next.</p>' +
+      '<div style="font-size:15px;font-weight:700;color:#111;margin-bottom:14px;">Message A/B tests</div>' +
+      '<div class="metrics-grid">' +
+        tests.map(t =>
+          '<div class="metric-card"><div class="metric-card-label">' + esc(t.label) + '</div>' +
+            '<div class="metric-variant"><span class="variant-a">A</span><span style="font-size:14px;color:#333;font-style:italic;">' + esc(t.a) + '</span></div>' +
+            '<div class="metric-variant"><span class="variant-b">B</span><span style="font-size:14px;color:#333;font-style:italic;">' + esc(t.b) + '</span></div>' +
+            '<div class="metric-hint">' + esc(t.hint) + '</div></div>'
+        ).join('') +
+      '</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#111;margin-bottom:14px;">Funnel metrics</div>' +
+      funnel.map(f =>
+        '<div class="funnel-row"><div class="funnel-num">' + f.n + '</div><div class="funnel-body"><span class="funnel-name">' + esc(f.name) + '</span><span class="funnel-sub">' + esc(f.sub) + '</span></div><div class="funnel-q">' + esc(f.q) + '</div></div>'
+      ).join('') +
+    '</div>';
+  }
+
+  function renderTools() {
+    const tools = [
+      { name:'Clay', desc:'Build + enrich contact list with titles, LinkedIn, emails, phones, and triggers' },
+      { name:'LinkedIn Sales Navigator', desc:'Find Director+ buyers in Ops, Patient Access, Revenue Cycle, Finance, Integration' },
+      { name:'Apollo / Outreach / HubSpot', desc:'Run the 14-day multichannel sequence and track every touch' },
+      { name:'ChatGPT / Claude / Lavender', desc:'Generate persona variants, objection handling, and call openers' },
+      { name:'Gong / Chorus', desc:'Review call recordings, objections, and winning talk tracks' },
+      { name:'Airtable / Zapier / Make', desc:'Campaign dashboard and automated handoffs between tools' },
+    ];
+    const questions = [
+      'Does Valerie usually land first through call center, referral automation, or fax automation?',
+      'Which persona is usually the strongest champion — Ops, Patient Access, CFO, or CEO?',
+      'What case-study metric resonates most with specialty MSOs?',
+      'Which EMR / integration constraints most affect implementation at newly acquired practices?',
+    ];
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">07</span><h2 class="section-title">Tools &amp; Open Questions</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">The full stack I\'d deploy at scale, and 4 questions that would sharpen the next campaign before it launches.</p>' +
+      '<div class="tools-grid"><div><div class="tools-col-title">Tools at scale</div>' +
+        tools.map(t => '<div class="tool-item"><div class="tool-item-name">' + esc(t.name) + '</div><div class="tool-item-desc">' + esc(t.desc) + '</div></div>').join('') +
+      '</div><div><div class="tools-col-title">Open questions for Valerie</div>' +
+        questions.map((q, i) => '<div class="question-card"><div class="question-num">0' + (i+1) + '</div><div class="question-text">' + esc(q) + '</div></div>').join('') +
+      '</div></div></div>';
+  }
+
+  function bindEvents() {
+    document.querySelectorAll('[data-section]').forEach(el => {
+      el.onclick = () => goToSection(el.getAttribute('data-section'));
     });
-
-    // Scroll spy for nav
-    const sections = [...document.querySelectorAll('section, .hero')];
-    const navAnchors = [...document.querySelectorAll('.nav-links a')];
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          navAnchors.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    const scoreBtn = document.getElementById('score-btn');
+    if (scoreBtn) scoreBtn.onclick = () => { if (state.scoringPhase !== 'running') startScoring(); };
+    document.querySelectorAll('[data-buyer]').forEach(el => {
+      const i = parseInt(el.getAttribute('data-buyer'), 10);
+      el.onclick = () => {
+        if (state.buyerScores[i] !== null && state.buyerScores[i] !== undefined) {
+          setState({ activeBuyer: state.activeBuyer === i ? null : i });
         }
-      });
-    }, { rootMargin: '-40% 0px -50% 0px' });
-    sections.forEach(s => { if (s.id) observer.observe(s); });
-
-    // Init
-    renderBars('scoreBars', DIMENSIONS, 'weight', 'weight');
-    renderBars('signalBars', SIGNALS, 'score', null);
-    renderAccounts();
-    renderTimeline();
-    renderPersonas();
-    renderFlowchart();
-    renderML();
-
-    // Animate bars on load
-    requestAnimationFrame(() => {
-      document.querySelectorAll('.bar-fill').forEach(bar => {
-        const w = bar.style.width;
-        bar.style.width = '0';
-        requestAnimationFrame(() => { bar.style.width = w; });
+      };
+    });
+    const closeBuyer = document.getElementById('close-buyer');
+    if (closeBuyer) closeBuyer.onclick = () => setState({ activeBuyer:null });
+    document.querySelectorAll('[data-day]').forEach(el => {
+      const i = parseInt(el.getAttribute('data-day'), 10);
+      el.onclick = () => setState({
+        activeCampaignDay: state.activeCampaignDay === i ? null : i,
+        activeCampaignMsg: 0
       });
     });
-  </script>
+    const closeCampaign = document.getElementById('close-campaign');
+    if (closeCampaign) closeCampaign.onclick = () => setState({ activeCampaignDay:null });
+    document.querySelectorAll('[data-msg]').forEach(el => {
+      el.onclick = () => setState({ activeCampaignMsg: parseInt(el.getAttribute('data-msg'), 10) });
+    });
+    const copyBtn = document.getElementById('copy-msg');
+    if (copyBtn && state.activeCampaignDay !== null) {
+      const day = dayData[state.activeCampaignDay];
+      const msg = day.messages[state.activeCampaignMsg ?? 0] ?? day.messages[0];
+      copyBtn.onclick = () => copyMessage(msg.subject, msg.body, copyBtn);
+    }
+  }
+
+  function render() {
+    renderHeader();
+    const main = document.getElementById('main');
+    let content = '';
+    switch (state.view) {
+      case 'overview': content = renderOverview(); break;
+      case 'methodology': content = renderMethodology(); break;
+      case 'prioritization': content = renderPrioritization(); break;
+      case 'target': content = renderTarget(); break;
+      case 'buyers': content = renderBuyers(); break;
+      case 'campaign': content = renderCampaign(); break;
+      case 'metrics': content = renderMetrics(); break;
+      case 'tools': content = renderTools(); break;
+      default: content = renderOverview();
+    }
+    main.innerHTML = content;
+    bindEvents();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'Escape') { goBack(); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { goPrev(); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { goNext(); e.preventDefault(); }
+  });
+
+  render();
+})();
+</script>
 </body>
 </html>
