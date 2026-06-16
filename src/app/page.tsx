@@ -31,7 +31,7 @@ const STAGES = [
 const STAGE_ORDER = ['discover', 'enrich', 'contacts', 'deep-dive', 'scoring', 'done']
 
 type CompanyRow    = { name: string; website: string }
-type Filter        = 'ALL' | 'HIGH' | 'MED' | 'LOW' | 'DQ'
+type Filter        = 'ALL' | 'HIGH' | 'MED' | 'LOW' | 'DQ' | 'INSUFFICIENT'
 type ProgressInfo  = { step: string; message: string; iteration: number; snippets: string[] }
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
@@ -40,11 +40,19 @@ function priority(status: CompanyResult['score']['status']): Filter {
   if (status === 'CALL NOW')     return 'HIGH'
   if (status === 'SEQUENCE')     return 'MED'
   if (status === 'DISQUALIFIED') return 'DQ'
+  if (status === 'INSUFFICIENT') return 'INSUFFICIENT'
   return 'LOW'
 }
 
 function PriorityBadge({ status }: { status: CompanyResult['score']['status'] }) {
   const p = priority(status)
+  if (p === 'INSUFFICIENT') {
+    return (
+      <span className="px-2.5 py-1 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800 border border-amber-300">
+        NEED DATA
+      </span>
+    )
+  }
   return (
     <span className={cn('px-2.5 py-1 rounded-full text-xs font-bold tracking-wide',
       p === 'HIGH' ? 'bg-emerald-500 text-white' :
@@ -52,6 +60,22 @@ function PriorityBadge({ status }: { status: CompanyResult['score']['status'] })
       p === 'DQ'   ? 'bg-red-100 text-red-600' :
                      'bg-slate-100 text-slate-500'
     )}>{p}</span>
+  )
+}
+
+function SourcesBadge({ count }: { count: number | undefined }) {
+  if (count === undefined) return null
+  const tone =
+    count >= 6 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+    count >= 3 ? 'bg-slate-50 text-slate-600 border-slate-200' :
+                 'bg-amber-50 text-amber-700 border-amber-200'
+  return (
+    <span
+      title={`${count} distinct sources cited`}
+      className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border tabular-nums', tone)}
+    >
+      {count} src
+    </span>
   )
 }
 
@@ -184,14 +208,16 @@ function LivePipeline({
                 <span key={r.id} className={cn(
                   'text-xs rounded-full px-2.5 py-0.5 flex items-center gap-1 font-medium border',
                   r.score.status === 'DISQUALIFIED' ? 'text-red-600 bg-red-50 border-red-200' :
+                  r.score.status === 'INSUFFICIENT' ? 'text-amber-700 bg-amber-50 border-amber-200' :
                   r.score.total >= 80 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
                   r.score.total >= 60 ? 'text-amber-700 bg-amber-50 border-amber-200' :
                   'text-muted-foreground bg-muted border-border'
                 )}>
                   <CheckCircle className="w-3 h-3" />
                   {r.name}
-                  {r.score.status !== 'DISQUALIFIED' && <strong className="ml-0.5">{r.score.total}</strong>}
                   {r.score.status === 'DISQUALIFIED' && <span className="ml-0.5">DQ</span>}
+                  {r.score.status === 'INSUFFICIENT' && <span className="ml-0.5">need data</span>}
+                  {r.score.status !== 'DISQUALIFIED' && r.score.status !== 'INSUFFICIENT' && <strong className="ml-0.5">{r.score.total}</strong>}
                 </span>
               ))}
             </div>
@@ -408,7 +434,7 @@ export default function Home() {
     }
   }
 
-  const qualified = results.filter(r => r.score.status !== 'DISQUALIFIED')
+  const qualified = results.filter(r => r.score.status !== 'DISQUALIFIED' && r.score.status !== 'INSUFFICIENT')
   const avg = qualified.length ? Math.round(qualified.reduce((s, r) => s + r.score.total, 0) / qualified.length) : null
   const counts: Record<Filter, number> = {
     ALL: results.length,
@@ -416,6 +442,7 @@ export default function Home() {
     MED:  results.filter(r => r.score.status === 'SEQUENCE').length,
     LOW:  results.filter(r => r.score.status === 'DEPRIORITIZE').length,
     DQ:   results.filter(r => r.score.status === 'DISQUALIFIED').length,
+    INSUFFICIENT: results.filter(r => r.score.status === 'INSUFFICIENT').length,
   }
   const filtered = results
     .filter(r =>
@@ -423,6 +450,7 @@ export default function Home() {
       filter === 'MED'  ? r.score.status === 'SEQUENCE' :
       filter === 'LOW'  ? r.score.status === 'DEPRIORITIZE' :
       filter === 'DQ'   ? r.score.status === 'DISQUALIFIED' :
+      filter === 'INSUFFICIENT' ? r.score.status === 'INSUFFICIENT' :
       true
     )
     .filter(r =>
@@ -655,14 +683,19 @@ export default function Home() {
               <div className="flex items-center gap-3 flex-wrap px-4 py-3 border-t border-outline-variant/60">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 mr-1">Filter</span>
                 <div className="flex items-center gap-1">
-                  {(['ALL','HIGH','MED','LOW','DQ'] as Filter[]).map(f => (
+                  {(['ALL','HIGH','MED','LOW','DQ','INSUFFICIENT'] as Filter[]).map(f => (
                     <button key={f} onClick={() => { setFilter(f) }}
                       className={cn('px-3 py-1 text-xs font-semibold rounded-lg transition-all',
                         filter === f
                           ? 'bg-foreground text-background'
                           : 'text-on-surface-variant hover:bg-surface-low'
                       )}>
-                      {f === 'ALL' ? 'All' : f === 'HIGH' ? 'Call now' : f === 'MED' ? 'Sequence' : f === 'LOW' ? 'Low' : 'DQ'}
+                      {f === 'ALL' ? 'All'
+                        : f === 'HIGH' ? 'Call now'
+                        : f === 'MED' ? 'Sequence'
+                        : f === 'LOW' ? 'Low'
+                        : f === 'DQ' ? 'DQ'
+                        : 'Need data'}
                       {counts[f] > 0 && <span className="ml-1 opacity-60 tabular-nums">{counts[f]}</span>}
                     </button>
                   ))}
@@ -706,15 +739,20 @@ export default function Home() {
                       const painTriggers = r.inputData.filter(d => d.type === 'Pain Point').slice(0, 2)
                       const phone = r.contacts[0]?.phone || r.mainPhone
                       const isDQ = r.score.status === 'DISQUALIFIED'
+                      const isInsufficient = r.score.status === 'INSUFFICIENT'
 
                       return (
                         <tr key={r.id} className={cn(
                           'border-b border-outline-variant/50 transition-colors',
-                          isDQ ? 'bg-red-50/40' : 'hover:bg-surface-low'
+                          isDQ ? 'bg-red-50/40' :
+                          isInsufficient ? 'bg-amber-50/30' : 'hover:bg-surface-low'
                         )}>
                           <td className="py-3 px-4"><PriorityBadge status={r.score.status} /></td>
                           <td className="py-3 px-4">
-                            <div className="font-semibold text-sm">{r.name}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-semibold text-sm">{r.name}</div>
+                              <SourcesBadge count={r.score.sourceCount} />
+                            </div>
                             <div className="text-xs text-on-surface-variant mt-0.5">{r.domain}</div>
                             {r.location && <div className="text-xs text-on-surface-variant/70 mt-0.5">{r.location}</div>}
                           </td>
@@ -748,13 +786,20 @@ export default function Home() {
                             ) : <span className="text-xs text-on-surface-variant">—</span>}
                           </td>
                           <td className="py-3 px-4 text-center">
-                            <span className={cn('text-lg font-extrabold',
-                              isDQ ? 'text-red-400' :
-                              r.score.total >= 80 ? 'text-emerald-600' :
-                              r.score.total >= 60 ? 'text-amber-500' : 'text-slate-400'
-                            )}>
-                              {isDQ ? '—' : r.score.total}
-                            </span>
+                            {isInsufficient ? (
+                              <div className="flex flex-col items-center">
+                                <span className="text-xs font-semibold text-amber-700">Insufficient</span>
+                                <span className="text-[10px] text-amber-700/70 tabular-nums">{r.score.sourceCount ?? 0} sources</span>
+                              </div>
+                            ) : (
+                              <span className={cn('text-lg font-extrabold',
+                                isDQ ? 'text-red-400' :
+                                r.score.total >= 80 ? 'text-emerald-600' :
+                                r.score.total >= 60 ? 'text-amber-500' : 'text-slate-400'
+                              )}>
+                                {isDQ ? '—' : r.score.total}
+                              </span>
+                            )}
                           </td>
                           <td className="py-3 px-4 text-right">
                             <PipelineButton

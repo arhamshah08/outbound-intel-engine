@@ -16,6 +16,8 @@ export interface ScoreDimension {
   evidence: string
   confidence: 'High' | 'Medium' | 'Low'
   researchUrl?: string
+  sourceUrl?: string
+  evidenceVerified?: boolean
 }
 
 export interface PainPoint {
@@ -57,10 +59,19 @@ export interface CallBrief {
   researchLinks: string[]
 }
 
+export type OutcomeStatus =
+  | 'CALL NOW'
+  | 'SEQUENCE'
+  | 'DEPRIORITIZE'
+  | 'DISQUALIFIED'
+  | 'INSUFFICIENT'
+
 export interface OutcomeScore {
   dimensions: ScoreDimension[]
   total: number
-  status: 'CALL NOW' | 'SEQUENCE' | 'DEPRIORITIZE' | 'DISQUALIFIED'
+  status: OutcomeStatus
+  sourceCount?: number
+  sources?: string[]
 }
 
 export interface PlaybookOpener {
@@ -172,4 +183,5 @@ export interface CompanyResult {
   score: OutcomeScore
   callBrief?: CallBrief
   error?: string
+  missingFields?: { field: string; label: string }[]
 }

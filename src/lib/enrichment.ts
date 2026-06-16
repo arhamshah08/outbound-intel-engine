@@ -255,10 +255,32 @@ export async function enrichCompany(
     contacts,
   }
 
-  const [score, enrichedContacts] = await Promise.all([
+  // Count distinct source URLs feeding the score — used for the visibility badge
+  // and the INSUFFICIENT threshold (< 3 sources = not enough to score honestly).
+  const distinctSources = Array.from(
+    new Set(inputData.map(d => d.url).filter((u): u is string => Boolean(u && u.length > 0))),
+  )
+  partial.inputData = inputData
+
+  const [rawScore, enrichedContacts] = await Promise.all([
     scoreCompany(partial, opts.product, opts.tags),
     scoreContacts(contacts, partial, opts.product),
   ])
+
+  // Apply source-count visibility: attach the count to the score, and downgrade
+  // to INSUFFICIENT if we found fewer than 3 distinct sources backing it.
+  const MIN_SOURCES = 3
+  const score = {
+    ...rawScore,
+    sourceCount: distinctSources.length,
+    sources: distinctSources,
+    status:
+      rawScore.status === 'DISQUALIFIED' || rawScore.status === 'INSUFFICIENT'
+        ? rawScore.status
+        : distinctSources.length < MIN_SOURCES
+          ? ('INSUFFICIENT' as const)
+          : rawScore.status,
+  }
 
   return {
     id,
@@ -277,7 +299,10 @@ export async function enrichCompany(
     recentNews:    (co.recent_news as string | undefined) || '',
     description: co.description || '',
     status: 'done',
-    statusMessage: `${score.status} — ${score.total}/100`,
+    statusMessage:
+      score.status === 'INSUFFICIENT'
+        ? `INSUFFICIENT — ${distinctSources.length} sources`
+        : `${score.status} — ${score.total}/100`,
     iteration: 3,
     inputData,
     contacts: enrichedContacts,

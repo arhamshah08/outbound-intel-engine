@@ -125,71 +125,34 @@ async function generate(prompt: string, maxTokens = 800): Promise<string> {
   }
 }
 
-// Cloud-only generate for scoring — skips local Ollama (too small for reliable scoring)
+// Deterministic scoring — Groq only, temperature 0, fixed seed.
+// Same input → same output. No model race; no temperature drift.
+const SCORING_MODEL = 'llama-3.3-70b-versatile'
+const SCORING_SEED = 42
+const SCORING_TEMPERATURE = 0
+
 async function generateScoring(prompt: string): Promise<string> {
   const groqKey = process.env.GROQ_API_KEY
-  if (groqKey) {
-    try {
-      const res = await raceTimeout(
-        fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
-          body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: prompt }], max_tokens: 700 }),
-        }).then(r => r.json()),
-        30000,
-      )
-      const text = res.choices?.[0]?.message?.content ?? ''
-      if (text) { console.log('[scoring] Groq OK'); return text }
-      console.error('[scoring] Groq empty:', JSON.stringify(res).slice(0, 200))
-    } catch (e) {
-      console.error('[scoring] Groq failed:', e instanceof Error ? e.message : String(e))
-    }
-  }
+  if (!groqKey) throw new Error('GROQ_API_KEY not configured — scoring requires Groq')
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY
-  if (anthropicKey) {
-    try {
-      const res = await raceTimeout(
-        fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, messages: [{ role: 'user', content: prompt }] }),
-        }).then(r => r.json()),
-        45000,
-      )
-      const text = res.content?.[0]?.text ?? ''
-      if (text) { console.log('[scoring] Anthropic OK'); return text }
-    } catch (e) {
-      console.error('[scoring] Anthropic failed:', e instanceof Error ? e.message : String(e))
-    }
-  }
-
-  const openaiKey = process.env.OPENAI_API_KEY
-  if (openaiKey) {
-    try {
-      const res = await raceTimeout(
-        fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiKey}` },
-          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], max_tokens: 700 }),
-        }).then(r => r.json()),
-        45000,
-      )
-      const text = res.choices?.[0]?.message?.content ?? ''
-      if (text) return text
-    } catch (e) {
-      console.error('[scoring] OpenAI failed:', e instanceof Error ? e.message : String(e))
-    }
-  }
-
-  try {
-    const google = getGoogle()
-    const { text } = await raceTimeout(generateText({ model: google('gemini-2.0-flash'), prompt, maxTokens: 700 }), 90000)
-    return text
-  } catch (e) {
-    console.error('[scoring] Gemini failed:', e instanceof Error ? e.message : String(e))
-    throw e
-  }
+  const res = await raceTimeout(
+    fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
+      body: JSON.stringify({
+        model: SCORING_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 800,
+        temperature: SCORING_TEMPERATURE,
+        seed: SCORING_SEED,
+      }),
+    }).then(r => r.json()),
+    30000,
+  )
+  const text = res.choices?.[0]?.message?.content ?? ''
+  if (!text) throw new Error(`Groq returned empty response: ${JSON.stringify(res).slice(0, 200)}`)
+  console.log(`[scoring] Groq ${SCORING_MODEL} (temp=${SCORING_TEMPERATURE}, seed=${SCORING_SEED}) OK`)
+  return text
 }
 
 export async function scoreCompany(
@@ -254,18 +217,19 @@ Replace each "score": 0 with a real integer 0-maxScore based on the company data
     }
   } catch (e) {
     console.error('[scoreCompany] AI scoring failed:', e instanceof Error ? e.message : String(e))
-    // Return data-only result — company still shows with intel, score marked as failed
+    // Honest failure: mark INSUFFICIENT (not 0/100 DEPRIORITIZE) so UI can show
+    // "scoring unavailable" with a Retry button instead of pretending the company is bad.
     return {
       dimensions: [
-        { name: 'ICP Fit', maxScore: 30, score: 0, evidence: 'AI scoring unavailable — review intel manually', confidence: 'Low' as const },
-        { name: 'Workflow Pain', maxScore: 20, score: 0, evidence: 'AI scoring unavailable', confidence: 'Low' as const },
-        { name: 'Scale / Complexity', maxScore: 15, score: 0, evidence: 'AI scoring unavailable', confidence: 'Low' as const },
-        { name: 'Buying Committee', maxScore: 15, score: 0, evidence: 'AI scoring unavailable', confidence: 'Low' as const },
-        { name: 'Growth Pressure', maxScore: 10, score: 0, evidence: 'AI scoring unavailable', confidence: 'Low' as const },
-        { name: 'Messaging', maxScore: 10, score: 0, evidence: 'AI scoring unavailable', confidence: 'Low' as const },
+        { name: 'ICP Fit', maxScore: 30, score: 0, evidence: 'Scoring service unavailable — retry to score this account', confidence: 'Low' as const },
+        { name: 'Workflow Pain', maxScore: 20, score: 0, evidence: 'Scoring service unavailable', confidence: 'Low' as const },
+        { name: 'Scale / Complexity', maxScore: 15, score: 0, evidence: 'Scoring service unavailable', confidence: 'Low' as const },
+        { name: 'Buying Committee', maxScore: 15, score: 0, evidence: 'Scoring service unavailable', confidence: 'Low' as const },
+        { name: 'Growth Pressure', maxScore: 10, score: 0, evidence: 'Scoring service unavailable', confidence: 'Low' as const },
+        { name: 'Messaging', maxScore: 10, score: 0, evidence: 'Scoring service unavailable', confidence: 'Low' as const },
       ],
       total: 0,
-      status: 'DEPRIORITIZE',
+      status: 'INSUFFICIENT',
     }
   }
 }
