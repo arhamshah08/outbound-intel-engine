@@ -284,25 +284,184 @@ function SectionHeader({ label }: { label: string }) {
   )
 }
 
-function Arrow({ vertical = false }: { vertical?: boolean }) {
-  if (vertical) {
-    return (
-      <div className="flex justify-center py-1">
-        <div className="flex flex-col items-center gap-0">
-          <div className="w-px h-4 bg-slate-300" />
-          <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-400" />
-        </div>
-      </div>
-    )
-  }
+// ─── Section 1: Rebuilt Flowchart ────────────────────────────────────────────
+
+function Connector({ label }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center px-1 text-slate-400 font-bold select-none">
-      →
+    <div className="flex flex-col items-center gap-0 select-none">
+      <div className="w-px h-6 bg-slate-200" />
+      {label && (
+        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 px-2 py-0.5 bg-white border border-slate-200 rounded-full mb-0.5">
+          {label}
+        </span>
+      )}
+      <svg width="12" height="7" viewBox="0 0 12 7" className="text-slate-300">
+        <polygon points="0,0 12,0 6,7" fill="currentColor" />
+      </svg>
     </div>
   )
 }
 
-// ─── Section 1: Timeline + Flowchart ─────────────────────────────────────────
+const BRANCH_STYLES: Record<string, { bg: string; border: string; signal: string; action: string; dot: string }> = {
+  gray:    { bg: 'bg-slate-50',   border: 'border-slate-200', signal: 'text-slate-600',   action: 'text-slate-500',   dot: 'bg-slate-400' },
+  amber:   { bg: 'bg-amber-50',   border: 'border-amber-200', signal: 'text-amber-700',   action: 'text-amber-600',   dot: 'bg-amber-400' },
+  blue:    { bg: 'bg-blue-50',    border: 'border-blue-200',  signal: 'text-blue-700',    action: 'text-blue-600',    dot: 'bg-blue-400' },
+  emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', signal: 'text-emerald-700', action: 'text-emerald-600', dot: 'bg-emerald-500' },
+  slate:   { bg: 'bg-slate-100',  border: 'border-slate-300', signal: 'text-slate-700',   action: 'text-slate-500',   dot: 'bg-slate-500' },
+}
+
+const OUTCOMES = [
+  { signal: 'Opened, No Reply',    action: 'Day 5 Email — Pattern Interrupt',        color: 'gray'    },
+  { signal: 'No Open',             action: 'Send Cleaner Operational Subject',        color: 'amber'   },
+  { signal: 'LinkedIn Accepted',   action: 'Soft Question — No Pitch',               color: 'blue'    },
+  { signal: 'Call Connected',      action: 'Run Discovery Opener',                    color: 'emerald' },
+  { signal: 'Reply — Wrong Person', action: 'Find Right Owner + Restart',             color: 'slate'   },
+]
+
+const PERSONA_CONFIG = [
+  { title: 'COO / Ops',         sub: 'Integration',     angle: 'New-site intake standardization',       accent: '#3b82f6', bg: '#eff6ff' },
+  { title: 'CFO / Finance',     sub: 'Revenue Cycle',   angle: 'Missed booked visits + labor leverage', accent: '#10b981', bg: '#f0fdf4' },
+  { title: 'Patient Access',    sub: 'Rev Cycle',       angle: 'Referrals, faxes, call-backs, scheduling', accent: '#f97316', bg: '#fff7ed' },
+  { title: 'CEO / President',   sub: 'Executive',       angle: 'Scale platform without admin drag',     accent: '#8b5cf6', bg: '#faf5ff' },
+]
+
+function CampaignFlowchart() {
+  return (
+    <div className="flex flex-col items-stretch gap-0">
+
+      {/* ── 1. Start ── */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2 bg-indigo-600 text-white rounded-2xl px-7 py-3 text-sm font-bold shadow-lg shadow-indigo-200">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2"/><path d="M12 8v4l3 3" strokeWidth="2" strokeLinecap="round"/></svg>
+          Start: Target Account
+        </div>
+      </div>
+
+      <Connector />
+
+      {/* ── 2. Identify Persona ── */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2 bg-slate-900 text-white rounded-xl px-8 py-2.5 text-sm font-semibold shadow-md min-w-[220px] justify-center">
+          Identify Persona
+        </div>
+      </div>
+
+      {/* branch lines to personas */}
+      <div className="flex justify-center">
+        <div className="w-px h-4 bg-slate-200" />
+      </div>
+      <div className="relative flex justify-center">
+        <div className="absolute top-0 left-[12.5%] right-[12.5%] h-px bg-slate-200" />
+      </div>
+
+      {/* ── 3. Four Persona Cards ── */}
+      <div className="grid grid-cols-4 gap-3 mt-0">
+        {PERSONA_CONFIG.map((p) => (
+          <div
+            key={p.title}
+            className="rounded-xl p-3 border"
+            style={{ background: p.bg, borderColor: p.accent + '44' }}
+          >
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="w-2 h-2 rounded-full shrink-0" style={{ background: p.accent }} />
+              <p className="text-[11px] font-extrabold leading-tight" style={{ color: p.accent }}>
+                {p.title}
+              </p>
+            </div>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">{p.sub}</p>
+            <p className="text-[10px] text-slate-600 leading-snug">{p.angle}</p>
+          </div>
+        ))}
+      </div>
+
+      <Connector />
+
+      {/* ── 4. Execute Day 1 ── */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2.5 bg-slate-900 text-white rounded-xl px-7 py-2.5 text-sm font-semibold shadow-md">
+          <Mail className="w-4 h-4 text-blue-400" />
+          Execute Day 1 Email + LinkedIn
+          <Linkedin className="w-3.5 h-3.5 text-sky-400" />
+        </div>
+      </div>
+
+      <Connector />
+
+      {/* ── 5. Decision Diamond (CSS) ── */}
+      <div className="flex justify-center py-1">
+        <div className="relative" style={{ width: 200, height: 88 }}>
+          {/* rotated square = diamond */}
+          <div
+            className="absolute bg-amber-50 border-2 border-amber-400 rounded-lg"
+            style={{ width: 76, height: 76, transform: 'rotate(45deg)', top: 6, left: 62 }}
+          />
+          {/* unrotated label on top */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[11px] font-bold text-amber-800 text-center leading-tight z-10">
+              Engagement<br />Signal?
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* branch line from diamond → horizontal bar → vertical drops */}
+      <div className="flex justify-center">
+        <div className="w-px h-3 bg-slate-200" />
+      </div>
+      <div className="relative h-0">
+        <div className="absolute inset-x-0 top-0 h-px bg-slate-200" />
+      </div>
+
+      {/* ── 6. Five Outcome Branches ── */}
+      <div className="grid grid-cols-5 gap-2 mt-0 pt-0">
+        {OUTCOMES.map((o) => {
+          const s = BRANCH_STYLES[o.color]
+          return (
+            <div key={o.signal} className="flex flex-col items-center gap-0">
+              <div className="w-px h-4 bg-slate-200" />
+              <div className={cn('rounded-xl border p-2.5 w-full', s.bg, s.border)}>
+                <div className="flex items-center gap-1 mb-1.5">
+                  <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', s.dot)} />
+                  <p className={cn('text-[10px] font-bold uppercase tracking-wide leading-tight', s.signal)}>
+                    {o.signal}
+                  </p>
+                </div>
+                <p className={cn('text-[10px] leading-snug pl-2.5', s.action)}>{o.action}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <Connector />
+
+      {/* ── 7. Continue Sequence ── */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-6 py-2.5 text-xs font-semibold text-slate-700 shadow-sm">
+          <span className="text-slate-400">Day 8</span>
+          <span className="text-slate-300">→</span>
+          <span className="text-slate-500">Day 10</span>
+          <span className="text-slate-300">→</span>
+          <span className="text-slate-500">Day 12</span>
+          <span className="text-slate-300">→</span>
+          <span className="text-slate-700 font-bold">Day 14</span>
+          <span className="ml-1 text-[10px] font-normal text-slate-400">(adapt based on responses)</span>
+        </div>
+      </div>
+
+      <Connector />
+
+      {/* ── 8. Meeting Booked ── */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2.5 bg-emerald-600 text-white rounded-2xl px-8 py-3 text-sm font-bold shadow-lg shadow-emerald-200">
+          <CheckCircle className="w-4 h-4" />
+          Meeting Booked
+        </div>
+      </div>
+
+    </div>
+  )
+}
 
 function TimelineTable() {
   return (
@@ -313,194 +472,29 @@ function TimelineTable() {
         return (
           <div
             key={row.day}
-            className="flex items-start gap-3 bg-white border border-outline-variant rounded-xl p-3"
+            className="flex items-start gap-3 bg-white border border-outline-variant rounded-xl p-3 hover:shadow-sm transition-shadow"
           >
-            {/* Day badge */}
-            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-slate-800 text-white flex flex-col items-center justify-center leading-tight">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Day</span>
-              <span className="text-lg font-extrabold">{row.day}</span>
+            <div className="flex-shrink-0 w-11 h-11 rounded-lg bg-slate-900 text-white flex flex-col items-center justify-center leading-tight">
+              <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Day</span>
+              <span className="text-base font-extrabold">{row.day}</span>
             </div>
-
-            {/* Channel icon */}
-            <div className={cn('flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center mt-1.5', chanColor)}>
-              <Icon className="w-4 h-4" />
+            <div className={cn('flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-1.5', chanColor)}>
+              <Icon className="w-3.5 h-3.5" />
             </div>
-
-            {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-on-surface leading-tight">{row.touch}</p>
-              <div className="flex flex-wrap gap-1 mt-1.5">
+              <p className="text-xs font-bold text-on-surface leading-tight">{row.touch}</p>
+              <div className="flex flex-wrap gap-1 mt-1">
                 {row.tone.map((t) => (
-                  <span key={t} className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize', TONE_COLOR[t])}>
+                  <span key={t} className={cn('text-[9px] font-semibold px-1.5 py-0.5 rounded-full capitalize', TONE_COLOR[t])}>
                     {t}
                   </span>
                 ))}
               </div>
-              <p className="text-xs text-on-surface-variant mt-1 leading-snug">{row.goal}</p>
+              <p className="text-[10px] text-on-surface-variant mt-1 leading-snug">{row.goal}</p>
             </div>
           </div>
         )
       })}
-    </div>
-  )
-}
-
-function FlowPersonaBox({
-  title,
-  angle,
-  color,
-}: {
-  title: string
-  angle: string
-  color: 'blue' | 'green' | 'orange' | 'purple'
-}) {
-  const borders: Record<string, string> = {
-    blue: 'border-blue-400 bg-blue-50',
-    green: 'border-emerald-400 bg-emerald-50',
-    orange: 'border-orange-400 bg-orange-50',
-    purple: 'border-purple-400 bg-purple-50',
-  }
-  const titles: Record<string, string> = {
-    blue: 'text-blue-800',
-    green: 'text-emerald-800',
-    orange: 'text-orange-800',
-    purple: 'text-purple-800',
-  }
-  return (
-    <div className={cn('border-2 rounded-xl p-3 flex-1 min-w-0', borders[color])}>
-      <p className={cn('text-xs font-bold leading-tight', titles[color])}>{title}</p>
-      <p className="text-[10px] text-slate-600 mt-1 leading-snug">{angle}</p>
-    </div>
-  )
-}
-
-function DiamondShape({ label }: { label: string }) {
-  return (
-    <div className="flex justify-center py-2">
-      <div className="relative w-44 h-12 flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-amber-100 border-2 border-amber-400"
-          style={{ transform: 'rotate(6deg) skewX(-12deg)' }}
-        />
-        <p className="relative text-xs font-bold text-amber-800 text-center z-10 px-2">{label}</p>
-      </div>
-    </div>
-  )
-}
-
-function OutcomeBranch({
-  signal,
-  action,
-  color,
-}: {
-  signal: string
-  action: string
-  color: string
-}) {
-  const colorMap: Record<string, { outer: string; inner: string }> = {
-    gray: { outer: 'bg-slate-100 border-slate-300', inner: 'text-slate-700' },
-    amber: { outer: 'bg-amber-50 border-amber-300', inner: 'text-amber-800' },
-    blue: { outer: 'bg-blue-50 border-blue-300', inner: 'text-blue-800' },
-    emerald: { outer: 'bg-emerald-50 border-emerald-300', inner: 'text-emerald-800' },
-    slate: { outer: 'bg-slate-50 border-slate-400', inner: 'text-slate-700' },
-  }
-  const c = colorMap[color] ?? colorMap['gray']
-  return (
-    <div className={cn('border rounded-xl p-2.5 flex-1 min-w-0 text-center', c.outer)}>
-      <p className={cn('text-[10px] font-bold uppercase tracking-wide', c.inner)}>{signal}</p>
-      <div className="my-1 border-t border-dashed border-current opacity-30" />
-      <p className={cn('text-[10px] leading-snug', c.inner)}>{action}</p>
-    </div>
-  )
-}
-
-function CampaignFlowchart() {
-  return (
-    <div className="flex flex-col gap-0 text-sm">
-      {/* Start */}
-      <div className="flex justify-center">
-        <div className="bg-indigo-600 text-white rounded-full px-6 py-2.5 text-sm font-bold shadow-md">
-          Start: Target Account
-        </div>
-      </div>
-
-      <Arrow vertical />
-
-      {/* Identify Persona */}
-      <div className="flex justify-center">
-        <div className="bg-slate-800 text-white rounded-xl px-6 py-2.5 text-sm font-semibold w-64 text-center shadow">
-          Identify Persona
-        </div>
-      </div>
-
-      <Arrow vertical />
-
-      {/* Four personas */}
-      <div className="flex gap-2">
-        <FlowPersonaBox
-          title="COO / Ops / Integration"
-          angle="Angle: New-site intake standardization"
-          color="blue"
-        />
-        <FlowPersonaBox
-          title="CFO / Finance"
-          angle="Angle: Missed booked visits + labor leverage"
-          color="green"
-        />
-        <FlowPersonaBox
-          title="Patient Access / Rev Cycle"
-          angle="Angle: Referrals, faxes, call-backs, scheduling"
-          color="orange"
-        />
-        <FlowPersonaBox
-          title="CEO / President"
-          angle="Angle: Scale platform without admin drag"
-          color="purple"
-        />
-      </div>
-
-      <Arrow vertical />
-
-      {/* Execute day 1 */}
-      <div className="flex justify-center">
-        <div className="bg-slate-800 text-white rounded-xl px-6 py-2.5 text-sm font-semibold w-72 text-center shadow">
-          Execute Day 1 Email + LinkedIn
-        </div>
-      </div>
-
-      <Arrow vertical />
-
-      {/* Diamond */}
-      <DiamondShape label="Engagement Signal?" />
-
-      <Arrow vertical />
-
-      {/* 5 outcome branches */}
-      <div className="flex gap-2">
-        <OutcomeBranch signal="Opened, No Reply" action="Day 5 Email (Pattern Interrupt)" color="gray" />
-        <OutcomeBranch signal="No Open" action="Send Cleaner Operational Subject" color="amber" />
-        <OutcomeBranch signal="LinkedIn Accepted" action="Send Soft Question, No Pitch" color="blue" />
-        <OutcomeBranch signal="Call Connected" action="Run Discovery Opener" color="emerald" />
-        <OutcomeBranch signal="Reply – Wrong Person" action="Ask for Right Owner + Restart" color="slate" />
-      </div>
-
-      <Arrow vertical />
-
-      {/* Continue sequence */}
-      <div className="flex justify-center">
-        <div className="bg-slate-100 border border-slate-300 text-slate-700 rounded-xl px-6 py-2.5 text-xs font-semibold text-center shadow-sm">
-          Continue Sequence: Day 8 → Day 10 → Day 12 → Day 14
-        </div>
-      </div>
-
-      <Arrow vertical />
-
-      {/* Meeting booked */}
-      <div className="flex justify-center">
-        <div className="bg-emerald-600 text-white rounded-xl px-8 py-3 text-sm font-bold shadow-md">
-          🗓 Meeting Booked
-        </div>
-      </div>
     </div>
   )
 }
