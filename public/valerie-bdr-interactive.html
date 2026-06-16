@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valerie — BDR Assignment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,900;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"DM Sans",system-ui,sans-serif;background:#EDEAE4;color:#111;-webkit-font-smoothing:antialiased;}
+button{font-family:"DM Sans",system-ui,sans-serif;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+.app{min-height:100vh;display:flex;flex-direction:column;}
+.header{position:sticky;top:0;z-index:200;background:rgba(237,234,228,0.95);backdrop-filter:blur(8px);border-bottom:1px solid #DDD9D2;padding:0 40px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.header-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.header-title{font-size:15px;font-weight:700;color:#111;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.header-meta{font-size:12px;color:#999;white-space:nowrap;}
+.btn-pill{background:#FFF;border:1px solid #DDD9D2;border-radius:999px;padding:6px 16px;font-size:13px;font-weight:600;color:#111;cursor:pointer;transition:background 0.15s;}
+.btn-pill:hover{background:#F5F2EC;}
+.btn-pill-sm{padding:6px 14px;font-size:12px;color:#555;}
+.btn-pill-ghost{background:none;border:1px solid #DDD9D2;border-radius:999px;padding:7px 16px;font-size:12px;color:#888;cursor:pointer;transition:background 0.15s;}
+.btn-pill-ghost:hover{background:#F5F2EC;}
+.main{flex:1;}
+.section-wrap{padding:60px 56px;max-width:1100px;margin:0 auto;}
+.section-wrap-narrow{max-width:960px;}
+.section-wrap-tight{max-width:880px;}
+.section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;}
+.section-num{font-size:48px;font-weight:700;color:#DDD;letter-spacing:-0.04em;}
+.section-title{font-size:48px;font-weight:700;color:#111;letter-spacing:-0.04em;line-height:1.05;}
+.section-lead{font-size:18px;color:#444;line-height:1.6;margin-bottom:48px;}
+.overview{padding:60px 56px 72px;max-width:1000px;margin:0 auto;}
+.overview h1{font-size:52px;font-weight:700;letter-spacing:-0.04em;line-height:1.05;margin-bottom:16px;max-width:720px;}
+.overview > p{font-size:18px;color:#444;line-height:1.6;max-width:580px;margin-bottom:52px;}
+.section-cards{display:flex;flex-direction:column;gap:8px;}
+.section-card{background:#FFF;border-radius:18px;padding:26px 30px;cursor:pointer;border:1px solid #E8E4DE;display:flex;align-items:center;gap:22px;transition:background 0.15s,border-color 0.15s;}
+.section-card:hover{background:#F7F5F1;border-color:#CAC6C0;}
+.section-card-num{font-size:26px;font-weight:700;color:#CCC;flex-shrink:0;width:50px;letter-spacing:-0.03em;}
+.section-card-body{flex:1;min-width:0;}
+.section-card-title{font-size:26px;font-weight:700;color:#111;letter-spacing:-0.02em;margin-bottom:4px;}
+.section-card-desc{font-size:15px;color:#666;line-height:1.5;}
+.section-card-tag{background:#F0EDE8;border-radius:999px;padding:6px 15px;font-size:12px;font-weight:600;color:#666;flex-shrink:0;}
+.section-card-arrow{font-size:22px;color:#CCC;flex-shrink:0;}
+.criteria-row{display:flex;align-items:center;gap:0;padding:20px 0;border-bottom:1px solid #E8E4DE;}
+.criteria-weight{width:72px;flex-shrink:0;font-size:28px;font-weight:900;color:#111;letter-spacing:-0.03em;}
+.criteria-bar-wrap{width:180px;flex-shrink:0;padding:0 20px;}
+.criteria-bar{height:6px;background:#E8E4DE;border-radius:999px;overflow:hidden;}
+.criteria-bar-fill{height:100%;background:#111;border-radius:999px;}
+.criteria-divider{width:1px;height:40px;background:#DDD9D2;flex-shrink:0;}
+.criteria-name{width:190px;flex-shrink:0;padding:0 24px;font-size:16px;font-weight:700;color:#111;}
+.criteria-desc{flex:1;font-size:15px;color:#555;line-height:1.55;}
+.criteria-total-row{display:flex;align-items:center;gap:0;padding:18px 0;}
+.dark-callout{margin-top:36px;background:#111;border-radius:16px;padding:22px 28px;font-size:15px;color:#AAA;line-height:1.6;}
+.dark-callout strong{color:#FFF;font-weight:700;}
+.account-card{background:#FFF;border-radius:18px;padding:22px 26px;border:1px solid #E8E4DE;margin-bottom:8px;}
+.account-top{display:flex;align-items:center;gap:18px;margin-bottom:12px;}
+.account-rank{font-size:20px;font-weight:700;color:#CCC;width:28px;flex-shrink:0;text-align:right;}
+.account-info{flex:1;min-width:0;}
+.account-name{font-size:20px;font-weight:700;letter-spacing:-0.01em;}
+.account-reason{font-size:13px;color:#AAA;margin-top:2px;}
+.account-score{font-size:36px;font-weight:900;letter-spacing:-0.04em;flex-shrink:0;}
+.account-tier{font-size:12px;font-weight:700;padding:6px 14px;border-radius:999px;white-space:nowrap;flex-shrink:0;}
+.account-bar-row{display:flex;align-items:center;gap:10px;padding-left:46px;}
+.account-bar-track{height:5px;background:#F0EDE8;border-radius:999px;flex:1;overflow:hidden;}
+.account-bar-fill{height:100%;border-radius:999px;transition:width 0.6s ease;}
+.tier-callout{background:#FFF;border-radius:16px;padding:18px 24px;border:1px solid #E8E4DE;display:flex;gap:14px;align-items:flex-start;margin-bottom:8px;}
+.tier-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.tier-callout-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.tier-callout-text{font-size:14px;color:#555;font-style:italic;line-height:1.55;}
+.target-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.target-card{background:#FFF;border-radius:20px;padding:32px 26px;border:1px solid #E8E4DE;}
+.target-card-num{font-size:52px;font-weight:900;color:#111;letter-spacing:-0.05em;line-height:1;margin-bottom:16px;}
+.target-card-title{font-size:17px;font-weight:700;margin-bottom:10px;}
+.target-card-text{font-size:14px;color:#555;line-height:1.65;}
+.stats-bar{background:#111;border-radius:20px;padding:28px 36px;display:flex;gap:0;align-items:stretch;}
+.stats-item{flex:1;padding:0 32px;}
+.stats-item:first-child{padding-left:0;padding-right:32px;}
+.stats-item:last-child{padding-right:0;padding-left:32px;}
+.stats-item-wide{flex:2;}
+.stats-divider{width:1px;background:#333;flex-shrink:0;}
+.stats-value{font-size:36px;font-weight:900;color:#FFF;letter-spacing:-0.04em;line-height:1;}
+.stats-label{font-size:12px;color:#666;margin-top:4px;}
+.score-btn{background:#111;color:#FFF;border:none;border-radius:16px;padding:18px 32px;font-size:17px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:12px;transition:background 0.15s;}
+.score-btn:disabled{background:#CCC;cursor:default;}
+.tool-tags{margin-top:10px;font-size:13px;color:#999;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tool-tag{background:#F0EDE8;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600;color:#777;}
+.buyer-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;}
+.buyer-card{border-radius:20px;padding:22px 18px;transition:border-color 0.15s;}
+.buyer-card:hover{border-color:#999!important;}
+.buyer-avatar{width:46px;height:46px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#FFF;margin-bottom:14px;}
+.buyer-score{display:inline-block;font-size:24px;font-weight:900;padding:4px 14px;border-radius:999px;margin-bottom:12px;letter-spacing:-0.02em;}
+.scan-badge{background:#F0EDE8;display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 12px;margin-bottom:12px;}
+.scan-dot{width:7px;height:7px;border-radius:50%;background:#888;animation:pulse 0.8s ease-in-out infinite;}
+.scan-text{font-size:12px;font-weight:600;color:#888;}
+.buyer-name{font-size:14px;font-weight:700;color:#111;line-height:1.3;margin-bottom:4px;}
+.buyer-title{font-size:11px;color:#AAA;line-height:1.4;margin-bottom:10px;}
+.buyer-priority{background:#F0EDE8;border-radius:999px;padding:4px 11px;font-size:10px;font-weight:600;color:#777;display:inline-block;}
+.scoring-panel{background:#FFF;border-radius:20px;padding:30px 32px;border:2px solid #111;margin-bottom:12px;}
+.scoring-label{font-size:12px;font-weight:700;color:#AAA;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;}
+.scoring-name{font-size:24px;font-weight:700;color:#111;margin-bottom:24px;}
+.tool-row{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.tool-icon{font-size:18px;width:22px;flex-shrink:0;text-align:center;}
+.tool-name{font-size:16px;font-weight:600;min-width:180px;}
+.tool-detail{font-size:14px;color:#AAA;font-style:italic;}
+.countup-row{display:flex;align-items:baseline;gap:10px;padding-top:16px;border-top:1px solid #F0EDE8;}
+.countup-num{font-size:64px;font-weight:900;color:#111;letter-spacing:-0.05em;line-height:1;}
+.countup-denom{font-size:24px;color:#CCC;font-weight:700;}
+.countup-label{font-size:15px;color:#AAA;margin-left:4px;}
+.detail-panel{background:#FFF;border-radius:20px;padding:30px 32px;border:1px solid #E8E4DE;margin-bottom:12px;}
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:16px;}
+.detail-person{display:flex;align-items:center;gap:16px;}
+.detail-avatar{width:54px;height:54px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#FFF;flex-shrink:0;}
+.detail-name{font-size:24px;font-weight:700;color:#111;letter-spacing:-0.02em;}
+.detail-title{font-size:14px;color:#888;margin-top:2px;}
+.detail-score-badge{display:inline-block;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;margin-top:8px;}
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.detail-cell{background:#F5F3EF;border-radius:14px;padding:18px;}
+.detail-cell-label{font-size:10px;font-weight:700;color:#AAA;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+.detail-cell-text{font-size:14px;color:#333;line-height:1.6;}
+.bench-note{background:#FFF;border-radius:14px;padding:16px 22px;border:1px solid #E8E4DE;font-size:14px;color:#666;line-height:1.6;}
+.bench-note strong{color:#111;font-weight:700;}
+.timeline-wrap{position:relative;margin-bottom:36px;padding-bottom:12px;}
+.timeline-line{position:absolute;top:32px;left:calc(100%/14);right:calc(100%/14);height:2px;background:#E4E0DA;z-index:0;border-radius:999px;}
+.timeline-nodes{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;}
+.day-node{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex:1;padding:0 4px;transition:opacity 0.15s;}
+.day-node:hover{opacity:0.75;}
+.day-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;transition:all 0.15s;}
+.day-label{font-size:12px;font-weight:700;color:#444;text-align:center;}
+.day-channel{font-size:11px;color:#AAA;text-align:center;line-height:1.4;white-space:pre-line;}
+.day-summary{font-size:11px;color:#555;text-align:center;line-height:1.4;font-weight:500;}
+.campaign-panel{background:#FFF;border-radius:20px;padding:30px 32px;border:1px solid #E8E4DE;margin-bottom:12px;}
+.campaign-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
+.campaign-panel-title{font-size:20px;font-weight:700;color:#111;letter-spacing:-0.02em;}
+.msg-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.msg-tab{border:none;border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s,color 0.15s;}
+.msg-subject{background:#F5F3EF;border-radius:12px;padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.msg-subject-label{font-size:11px;font-weight:700;color:#AAA;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;}
+.msg-subject-text{font-size:15px;font-weight:600;color:#111;font-style:italic;}
+.msg-body-wrap{position:relative;}
+.msg-body{font-size:15px;color:#333;line-height:1.75;white-space:pre-wrap;background:#FAFAF8;border-radius:14px;padding:24px 26px;border:1px solid #EFECE6;}
+.copy-btn{position:absolute;top:12px;right:12px;background:#FFF;border:1px solid #DDD9D2;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:600;color:#555;cursor:pointer;transition:background 0.15s,border-color 0.15s;}
+.copy-btn:hover{background:#F5F2EC;border-color:#CAC6C0;}
+.copy-btn.copied{color:#16A34A;border-color:#16A34A;}
+.ab-note{background:#FFF;border-radius:16px;padding:18px 22px;border:1px solid #E8E4DE;display:flex;gap:14px;align-items:flex-start;}
+.ab-badge{background:#F0EDE8;border-radius:999px;padding:5px 13px;font-size:11px;font-weight:700;color:#777;flex-shrink:0;margin-top:1px;}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:36px;}
+.metric-card{background:#FFF;border-radius:18px;padding:22px;border:1px solid #E8E4DE;}
+.metric-card-label{font-size:11px;font-weight:700;color:#AAA;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;}
+.metric-variant{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.metric-variant:last-of-type{margin-bottom:12px;}
+.variant-a{background:#F0EDE8;border-radius:999px;padding:3px 10px;font-size:12px;color:#666;font-weight:700;flex-shrink:0;}
+.variant-b{background:#111;border-radius:999px;padding:3px 10px;font-size:12px;color:#FFF;font-weight:700;flex-shrink:0;}
+.metric-hint{font-size:12px;color:#AAA;}
+.funnel-row{background:#FFF;border-radius:14px;padding:16px 22px;border:1px solid #E8E4DE;display:flex;align-items:center;gap:16px;margin-bottom:7px;}
+.funnel-num{width:34px;height:34px;border-radius:50%;background:#F0EDE8;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#888;flex-shrink:0;}
+.funnel-body{flex:1;}
+.funnel-name{font-size:15px;font-weight:700;}
+.funnel-sub{font-size:13px;color:#AAA;margin-left:12px;}
+.funnel-q{font-size:13px;color:#777;font-style:italic;}
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tools-col-title{font-size:15px;font-weight:700;margin-bottom:14px;}
+.tool-item{background:#FFF;border-radius:14px;padding:16px 20px;border:1px solid #E8E4DE;margin-bottom:7px;}
+.tool-item-name{font-size:15px;font-weight:700;}
+.tool-item-desc{font-size:13px;color:#AAA;margin-top:2px;line-height:1.5;}
+.question-card{background:#FFF;border-radius:16px;padding:22px;border:1px solid #E8E4DE;margin-bottom:8px;}
+.question-num{font-size:36px;font-weight:900;color:#111;letter-spacing:-0.04em;margin-bottom:8px;}
+.question-text{font-size:15px;color:#333;line-height:1.65;}
+.hidden{display:none!important;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.main-enter{animation:fadeUp 0.28s ease;}
+.progress-bar{display:flex;align-items:center;gap:6px;}
+.progress-dot{width:8px;height:8px;border-radius:50%;background:#DDD9D2;transition:background 0.2s,transform 0.2s;cursor:pointer;border:none;padding:0;}
+.progress-dot.active{background:#111;transform:scale(1.15);}
+.progress-dot.done{background:#16A34A;}
+.progress-label{font-size:11px;font-weight:700;color:#999;letter-spacing:0.06em;margin-right:4px;}
+.presenter-hint{background:#FFF;border:1px solid #E8E4DE;border-left:3px solid #111;border-radius:12px;padding:14px 18px;margin-bottom:28px;font-size:14px;color:#555;line-height:1.55;}
+.presenter-hint strong{color:#111;}
+.walkthrough{background:#111;border-radius:20px;padding:28px 32px;margin-top:40px;color:#AAA;}
+.walkthrough h3{color:#FFF;font-size:17px;font-weight:700;margin-bottom:14px;letter-spacing:-0.02em;}
+.walkthrough ol{padding-left:20px;display:flex;flex-direction:column;gap:10px;}
+.walkthrough li{font-size:14px;line-height:1.55;color:#CCC;}
+.walkthrough li strong{color:#FFF;}
+.walkthrough kbd{background:#333;border-radius:6px;padding:2px 7px;font-size:11px;color:#FFF;font-family:inherit;}
+.help-overlay{position:fixed;inset:0;background:rgba(17,17,17,0.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;}
+.help-panel{background:#FFF;border-radius:20px;padding:32px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);}
+.help-panel h3{font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-0.02em;}
+.help-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F0EDE8;font-size:14px;}
+.help-row:last-child{border-bottom:none;}
+.help-row kbd{background:#F0EDE8;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;}
+.help-close{margin-top:20px;width:100%;background:#111;color:#FFF;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-icon{background:#FFF;border:1px solid #DDD9D2;border-radius:999px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:#555;transition:background 0.15s;}
+.btn-icon:hover{background:#F5F2EC;}
+@media(max-width:900px){
+  .header{padding:0 20px;flex-wrap:wrap;height:auto;min-height:56px;padding-top:10px;padding-bottom:10px;}
+  .header-meta{display:none;}
+  .overview,.section-wrap{padding:40px 24px 48px;}
+  .overview h1{font-size:36px;}
+  .section-num,.section-title{font-size:36px;}
+  .section-card{flex-wrap:wrap;padding:20px;}
+  .section-card-tag,.section-card-arrow{display:none;}
+  .criteria-row{flex-wrap:wrap;gap:8px;padding:16px 0;}
+  .criteria-weight{width:60px;font-size:22px;}
+  .criteria-bar-wrap{width:120px;padding:0;}
+  .criteria-divider{display:none;}
+  .criteria-name{width:auto;padding:0;font-size:15px;}
+  .criteria-desc{width:100%;padding-left:60px;font-size:14px;}
+  .target-grid{grid-template-columns:1fr;}
+  .stats-bar{flex-direction:column;gap:20px;padding:24px;}
+  .stats-divider{width:100%;height:1px;}
+  .stats-item,.stats-item-wide{padding:0!important;}
+  .buyer-grid{grid-template-columns:repeat(2,1fr);}
+  .detail-grid{grid-template-columns:1fr 1fr;}
+  .timeline-line{display:none;}
+  .timeline-nodes{flex-wrap:wrap;gap:16px;justify-content:center;}
+  .day-node{flex:0 0 calc(33.333% - 12px);}
+  .metrics-grid,.tools-grid{grid-template-columns:1fr;}
+  .account-top{flex-wrap:wrap;}
+  .account-score{font-size:28px;}
+}
+@media(max-width:520px){
+  .buyer-grid{grid-template-columns:1fr;}
+  .detail-grid{grid-template-columns:1fr;}
+  .day-node{flex:0 0 calc(50% - 8px);}
+  .funnel-row{flex-direction:column;align-items:flex-start;}
+  .funnel-sub{display:block;margin-left:0;margin-top:4px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header" id="header"></header>
+  <main class="main" id="main"></main>
+  <div id="help-overlay" class="help-overlay hidden"></div>
+</div>
+<script>
+(function(){
+  const sectionData = [
+    { id:'methodology', num:'01', title:'Methodology', exposition:'How accounts were scored, selected, and sequenced against Valerie\'s ICP.', tag:'Framework' },
+    { id:'prioritization', num:'02', title:'Account Prioritization', exposition:'5 accounts scored. 2 qualify, 1 is strategic, 2 are disqualified as health systems.', tag:'Analysis' },
+    { id:'target', num:'03', title:'Why Elevate ENT', exposition:'One MSO, one buying committee, three reasons it scores highest — plus a live acquisition trigger.', tag:'Target Account' },
+    { id:'buyers', num:'04', title:'Buyer Map', exposition:'5 Director+ contacts. Run the AI score analysis, then click any contact to see their outreach profile.', tag:'5 Leads' },
+    { id:'campaign', num:'05', title:'14-Day Campaign', exposition:'Full multichannel sequence with every message, A/B tested. Click any day to read the copy.', tag:'Outreach' },
+    { id:'metrics', num:'06', title:'Testing & Metrics', exposition:'4 message variables A/B tested. 5 funnel metrics to measure and iterate the campaign.', tag:'Measurement' },
+    { id:'tools', num:'07', title:'Tools & Open Questions', exposition:'The full stack I\'d use at scale, plus 4 questions to sharpen the next campaign.', tag:'Operations' },
+  ];
+
+  const buyerData = [
+    { name:'Amy Verlsteffen', initials:'AV', title:'VP Operations (FL) / VP Patient Access', scoreBand:'high', priority:'1st Priority', role:'Owns all patient scheduling + contact centers across FL and TX.', trigger:'Actively building a contact-center strategy in each region.', angle:'Missed inbound calls and unfilled appointment slots.', hook:'Call-center + scheduling automation. Pilot one region, template across.' },
+    { name:'Michael Amerstein', initials:'MA', title:'Chief Operating Officer', scoreBand:'high', priority:'2nd Priority', role:'Owns front-office performance and standardization across 110 locations.', trigger:'Ex-COO Axia Women\'s Health, ex-CEO Peak Dental. Has scaled multi-site ops before.', angle:'Standardizing the front office as acquisitions stack up.', hook:'Full Valerie bundle at half the labor cost.' },
+    { name:'Corie Opdyke', initials:'CO', title:'VP Integration & Transformation', scoreBand:'high', priority:'3rd Priority', role:'Owns integration of every newly acquired practice.', trigger:'Active acquisition pace = perpetual front-office chaos.', angle:'Every new practice arrives with broken phones, fax, and scheduling.', hook:'A new practice runs on the Valerie model from week one.' },
+    { name:'Sylvain Foster', initials:'SF', title:'Chief Financial Officer', scoreBand:'mid', priority:'4th Priority', role:'Owns RCM, procurement, and decision support. The economic buyer.', trigger:'Front-office headcount grows in step with every new location.', angle:'Headcount scales linearly with locations — until Valerie.', hook:'Fax + referral automation with clear, measurable ROI.' },
+    { name:'Cliff Hogan', initials:'CH', title:'Chief Information Officer', scoreBand:'mid', priority:'Supporting Role', role:'Technical gatekeeper. Can block or enable.', trigger:'Standardizing front-office tech across mixed EMRs mid-integration.', angle:'Mixed EMRs across newly acquired practices.', hook:'Valerie layers on existing EMRs. No rip-and-replace.' },
+  ];
+
+  const finalScores = [72, 71, 70, 64, 58];
+
+  const toolSets = [
+    [{ name:'LinkedIn Sales Nav', detail:'found contact + 3 recent posts' }, { name:'Clay', detail:'enriched email + phone' }, { name:'Apollo', detail:'ICP fit score computed' }],
+    [{ name:'LinkedIn Sales Nav', detail:'found 8 mutual connections' }, { name:'Gong', detail:'matched talk track patterns' }, { name:'Apollo', detail:'verified Director+ role' }],
+    [{ name:'Clay', detail:'acquisition trigger detected' }, { name:'LinkedIn Sales Nav', detail:'confirmed active role' }, { name:'Web Scraping AI', detail:'Elevate press release found' }],
+    [{ name:'Apollo', detail:'RCM buyer pattern matched' }, { name:'LinkedIn Sales Nav', detail:'5 connections found' }, { name:'Clay', detail:'enriched RCM signals' }],
+    [{ name:'LinkedIn Sales Nav', detail:'technical gatekeeper flagged' }, { name:'Apollo', detail:'IT stack identified' }, { name:'Web Scraping AI', detail:'EMR vendor data scraped' }],
+  ];
+
+  const dayData = [
+    { day:1, label:'Day 1', channelLabel:'Email A/B\nLinkedIn', summary:'Open cold + connect', messages:[{ label:'Email · Version A (Formal)', subject:'quick thought on Elevate\'s new-site intake', body:'Hi Amy,\n\nI\'m reaching out because Elevate looks like one of the clearest fits for what we\'re building at Valerie.\n\nWhen ENT platforms add practices, the first operational strain is often not clinical capacity — it is the front office: faxes, referrals, call-backs, and scheduling follow-up that do not scale cleanly across sites.\n\nValerie helps independent specialty groups automate that work so teams can convert more patients without adding linear headcount.\n\nWorth 15 minutes this week? I can walk through where groups like Elevate usually lose patients between referral received and appointment booked.\n\nBest, Pushti' }, { label:'Email · Version B (Pattern Interrupt)', subject:'I was asked to reach out to you', body:'Hi Amy,\n\nI\'ll be straight about who asked — my own team did.\n\nWe\'re building Valerie, an AI front office for independent specialty groups, and when I mapped which platforms would benefit most, Elevate came up first.\n\nSo yes, this is a cold note, but there is a real reason behind it: my hunch is that the front office at newer Elevate practices is buried in faxes, referrals, and patient call-backs.\n\nGive me 15 minutes and I\'ll show you where patients are most likely slipping out before anyone gets them scheduled.\n\nBest, Pushti' }, { label:'LinkedIn Connect', subject:null, body:'Send a connection request with no note.' }] },
+    { day:3, label:'Day 3', channelLabel:'Call\nVoicemail', summary:'Cold call + voicemail', messages:[{ label:'Call Opener', subject:null, body:'Hey Amy, how are you doing?\n\n(High pitch — pattern interrupt.)\n\nListen, I\'ll be honest — this is a cold call, but I promise it is a well-researched cold call. I\'ll only take 30 seconds to explain why I called, and if it doesn\'t feel useful, feel free to hang up on me.' }, { label:'Voicemail', subject:null, body:'Hi Amy, it\'s Pushti from Valerie Health. If you have 15 minutes on Thursday, I can show you where patient demand may be leaking before it becomes booked visits.' }] },
+    { day:5, label:'Day 5', channelLabel:'Email A/B', summary:'Value angle — intake lag', messages:[{ label:'Email · Version A', subject:'the hidden cost of intake lag', body:'Hi Amy,\n\nBefore you scroll past this — hear me out.\n\nIn fast-growing specialty groups, patient demand often exists before the practice captures it. A referral comes in. A fax sits. A patient misses a call. A scheduler gets buried. None of that looks dramatic once, but across multiple ENT sites, it quietly turns into lost booked visits.\n\nValerie helps front-office teams process referrals, faxes, and scheduling work faster, with humans-in-the-loop where needed.\n\nWorth 15 minutes? Best, Pushti' }, { label:'Email · Version B', subject:'before you scroll past this', body:'(Same body — testing "before you scroll past this" vs. the formal subject line.)' }] },
+    { day:7, label:'Day 7', channelLabel:'LinkedIn', summary:'Curiosity message', messages:[{ label:'LinkedIn Message', subject:null, body:'Hi Amy, this isn\'t a pitch, I promise. Genuinely curious: when an ENT platform acquires as fast as Elevate, is front-office intake usually the first thing that strains, or am I overrating it?\n\nEven a one-word reply would help me understand the market better. And if I\'m right, I can show you where that intake layer may be leaking booked visits.' }] },
+    { day:9, label:'Day 9', channelLabel:'Call\nVoicemail', summary:'Final phone nudge', messages:[{ label:'Call + Voicemail', subject:null, body:'Hi Amy, Pushti again with Valerie. Last quick phone nudge from me. I still think Elevate is one of the clearest fits for what we\'re building, because the growth model depends on converting patient demand efficiently across sites.\n\nIf front-office intake is already solved, I\'m off base. If it is still uneven across newer practices, I think we can be useful. My number is [number].' }] },
+    { day:11, label:'Day 11', channelLabel:'Email A/B', summary:'Where platforms strain first', messages:[{ label:'Email · Version A', subject:'where specialty platforms usually feel it first', body:'Hi Amy,\n\nI almost didn\'t send this because it felt direct, but I think it is the right question.\n\nThe ENT groups one step ahead on the acquisition curve usually hit the same wall: front-office capacity at newer sites. The issue is rarely one big failure — it is usually small leakage across referral queues, fax handling, missed call-backs, and scheduling delays.\n\nValerie helps claw that capacity back without adding proportional headcount.\n\nCould I have 15 minutes this Thursday? Best, Pushti' }, { label:'Email · Version B', subject:'I almost didn\'t send this', body:'(Same body — testing "I almost didn\'t send this" vs. the formal variant.)' }] },
+    { day:14, label:'Day 14', channelLabel:'Breakup\nEmail', summary:'Breakup + leave open', messages:[{ label:'Email · Version A', subject:'should I close the loop?', body:'Hi Amy,\n\nNo reply usually means wrong time, wrong person, or wrong priority — all fair. I\'ll close the loop here.\n\nMy guess was that as Elevate scales, referral intake, faxes, and patient call-backs may become harder to standardize across practices.\n\nIf that is not a current priority, no worries. If it becomes one later, Valerie would be useful for converting more patient demand without adding proportional headcount.\n\nWe\'ve got your back. Best, Pushti' }, { label:'Email · Version B', subject:'I hate doing this', body:'(Same body — testing "I hate doing this" vs. the formal breakup variant.)' }] },
+  ];
+
+  const criteria = [
+    { weight:'30%', barPct:'100%', name:'ICP Fit', desc:'Independent provider group, MSO, or PE-backed platform — not a hospital or health system.' },
+    { weight:'25%', barPct:'83%', name:'Pain Match', desc:'High referral volume, fax-heavy workflows, high call volume, patient-conversion pressure.' },
+    { weight:'20%', barPct:'67%', name:'Buying Simplicity', desc:'Clear Director+ ops/growth buyer; limited enterprise procurement complexity.' },
+    { weight:'15%', barPct:'50%', name:'Growth Trigger', desc:'Multi-location growth, acquisitions, new-market expansion, scaling admin ops.' },
+    { weight:'10%', barPct:'33%', name:'Competitive Risk', desc:'Lower score if account already has a strong internal tech or practice-management layer.' },
+  ];
+
+  const accounts = [
+    { rank:'1', name:'Elevate ENT Partners', total:95, tier:'Tier 1', tierColor:'#16A34A', tierBg:'#DCFCE7', nameColor:'#111', scoreColor:'#111', barColor:'#16A34A', barW:'95%', reason:'Best-fit MSO · 110 locations · active acquisition · single buying committee' },
+    { rank:'2', name:'Growth Orthopedics', total:90, tier:'Tier 1', tierColor:'#16A34A', tierBg:'#DCFCE7', nameColor:'#111', scoreColor:'#111', barColor:'#16A34A', barW:'90%', reason:'Strong MSO alignment · clear referral + scheduling pain · Director+ ops buyers' },
+    { rank:'3', name:'US Oncology Network', total:81, tier:'Tier 2', tierColor:'#D97706', tierBg:'#FEF3C7', nameColor:'#111', scoreColor:'#111', barColor:'#D97706', barW:'81%', reason:'Strong pain match · McKesson infrastructure adds buying complexity' },
+    { rank:'4', name:'Sutter Health', total:43, tier:'DQ', tierColor:'#DC2626', tierBg:'#FEE2E2', nameColor:'#BBB', scoreColor:'#CCC', barColor:'#E8D0D0', barW:'43%', reason:'Health system — excluded by Valerie\'s ICP definition' },
+    { rank:'5', name:'Baylor Scott & White', total:43, tier:'DQ', tierColor:'#DC2626', tierBg:'#FEE2E2', nameColor:'#BBB', scoreColor:'#CCC', barColor:'#E8D0D0', barW:'43%', reason:'Health system — excluded by Valerie\'s ICP definition' },
+  ];
+
+  let state = {
+    view: 'overview',
+    activeBuyer: null,
+    activeCampaignDay: null,
+    activeCampaignMsg: 0,
+    scoringPhase: 'idle',
+    currentScoringIdx: -1,
+    buyerScores: [null, null, null, null, null],
+    currentTools: [],
+    countUpValue: null,
+    showHelp: false,
+  };
+
+  const walkthrough = [
+    { section:'methodology', text:'Explain your <strong>5-criteria scoring framework</strong> (30/25/20/15/10%)' },
+    { section:'prioritization', text:'Show <strong>5 accounts ranked</strong> — call out the 2 health-system DQs' },
+    { section:'target', text:'Make the case for <strong>Elevate ENT</strong> as #1 target (95/100)' },
+    { section:'buyers', text:'Click <strong>Run Score Analysis</strong>, then open Amy Verlsteffen' },
+    { section:'campaign', text:'Click <strong>Day 1</strong> → show A/B email variants + copy button' },
+    { section:'metrics', text:'Walk through <strong>A/B hypotheses</strong> and funnel metrics' },
+    { section:'tools', text:'Close with your <strong>stack + 4 questions</strong> for Valerie' },
+  ];
+
+  let timers = [];
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function setState(updates) {
+    if (typeof updates === 'function') {
+      Object.assign(state, updates(state));
+    } else {
+      Object.assign(state, updates);
+    }
+    render();
+  }
+
+  function goBack() {
+    setState({ view:'overview', activeBuyer:null, activeCampaignDay:null });
+  }
+
+  function goToSection(id) {
+    setState({ view:id, activeBuyer:null, activeCampaignDay:null, activeCampaignMsg:0 });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleHelp() {
+    setState({ showHelp: !state.showHelp });
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function goPrev() {
+    const idx = sectionData.findIndex(s => s.id === state.view);
+    if (idx > 0) goToSection(sectionData[idx - 1].id);
+  }
+
+  function goNext() {
+    const idx = sectionData.findIndex(s => s.id === state.view);
+    if (idx >= 0 && idx < sectionData.length - 1) goToSection(sectionData[idx + 1].id);
+  }
+
+  function startScoring() {
+    timers.forEach(t => { try { clearTimeout(t); clearInterval(t); } catch(e){} });
+    timers = [];
+    setState({ scoringPhase:'running', buyerScores:[null,null,null,null,null], currentScoringIdx:0, currentTools:[], countUpValue:null, activeBuyer:null });
+    let delay = 100;
+    for (let i = 0; i < 5; i++) {
+      const tools = toolSets[i];
+      const finalScore = finalScores[i];
+      const bd = delay;
+      timers.push(setTimeout(() => setState({ currentScoringIdx:i, currentTools:[{ ...tools[0], status:'scanning' }], countUpValue:null }), bd));
+      timers.push(setTimeout(() => setState({ currentTools:[{ ...tools[0], status:'done' }, { ...tools[1], status:'scanning' }] }), bd + 450));
+      timers.push(setTimeout(() => setState({ currentTools:[{ ...tools[0], status:'done' }, { ...tools[1], status:'done' }, { ...tools[2], status:'scanning' }] }), bd + 900));
+      timers.push(setTimeout(() => {
+        setState({ currentTools:[{ ...tools[0], status:'done' }, { ...tools[1], status:'done' }, { ...tools[2], status:'done' }], countUpValue:0 });
+        let count = 0;
+        const steps = 25;
+        const iv = setInterval(() => {
+          count += Math.ceil(finalScore / steps);
+          if (count >= finalScore) { count = finalScore; clearInterval(iv); }
+          setState({ countUpValue:count });
+        }, 600 / steps);
+        timers.push(iv);
+      }, bd + 1350));
+      timers.push(setTimeout(() => {
+        setState(prev => {
+          const ns = [...prev.buyerScores];
+          ns[i] = finalScore;
+          return { buyerScores:ns, countUpValue:null };
+        });
+      }, bd + 2100));
+      delay += 2300;
+    }
+    timers.push(setTimeout(() => {
+      setState({ scoringPhase:'done', currentScoringIdx:-1, currentTools:[], countUpValue:null });
+    }, delay + 200));
+  }
+
+  async function copyMessage(subject, body, btn) {
+    let text = body;
+    if (subject) text = 'Subject: ' + subject + '\n\n' + body;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch(e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    }
+  }
+
+  function renderHeader() {
+    const v = state.view;
+    const showBack = v !== 'overview';
+    const idx = sectionData.findIndex(s => s.id === v);
+    const prevSect = idx > 0 ? sectionData[idx - 1] : null;
+    const nextSect = idx >= 0 && idx < sectionData.length - 1 ? sectionData[idx + 1] : null;
+    const progressDots = showBack ? (
+      '<div class="progress-bar" aria-label="Section progress">' +
+        '<span class="progress-label">' + esc(sectionData[idx].num) + '</span>' +
+        sectionData.map((s, i) =>
+          '<button class="progress-dot' + (i === idx ? ' active' : (i < idx ? ' done' : '')) + '" data-goto="' + s.id + '" title="' + esc(s.title) + '" aria-label="' + esc(s.title) + '"></button>'
+        ).join('') +
+      '</div>'
+    ) : '';
+    document.getElementById('header').innerHTML =
+      '<div class="header-left">' +
+        (showBack ? '<button class="btn-pill" id="btn-back">← Overview</button>' : '') +
+        '<span class="header-title">Valerie — BDR Assignment</span>' +
+        progressDots +
+      '</div>' +
+      '<div class="header-right">' +
+        (showBack ? (
+          (prevSect ? '<button class="btn-pill btn-pill-sm" id="btn-prev">← ' + esc(prevSect.num) + '</button>' : '') +
+          (nextSect ? '<button class="btn-pill btn-pill-sm" id="btn-next">' + esc(nextSect.num) + ' →</button>' : '')
+        ) : '') +
+        '<button class="btn-icon" id="btn-help" title="Keyboard shortcuts (?)">?</button>' +
+        '<button class="btn-icon" id="btn-fs" title="Fullscreen">⛶</button>' +
+        '<span class="header-meta">Prepared by Pushti · June 2026</span>' +
+      '</div>';
+    const back = document.getElementById('btn-back');
+    if (back) back.onclick = goBack;
+    const prev = document.getElementById('btn-prev');
+    if (prev) prev.onclick = goPrev;
+    const next = document.getElementById('btn-next');
+    if (next) next.onclick = goNext;
+    document.getElementById('btn-help').onclick = toggleHelp;
+    document.getElementById('btn-fs').onclick = toggleFullscreen;
+    document.querySelectorAll('[data-goto]').forEach(el => {
+      el.onclick = () => goToSection(el.getAttribute('data-goto'));
+    });
+  }
+
+  function renderHelp() {
+    const overlay = document.getElementById('help-overlay');
+    if (!state.showHelp) {
+      overlay.classList.add('hidden');
+      overlay.innerHTML = '';
+      return;
+    }
+    overlay.classList.remove('hidden');
+    overlay.innerHTML =
+      '<div class="help-panel" role="dialog" aria-label="Keyboard shortcuts">' +
+        '<h3>Presenter shortcuts</h3>' +
+        [
+          ['← →', 'Previous / next section'],
+          ['Esc', 'Back to overview'],
+          ['?', 'Toggle this panel'],
+          ['Click cards', 'Navigate sections'],
+          ['Section 04', 'Run Score Analysis → click buyer'],
+          ['Section 05', 'Click day node → A/B tabs → Copy'],
+        ].map(([k, d]) => '<div class="help-row"><span>' + d + '</span><kbd>' + k + '</kbd></div>').join('') +
+        '<button class="help-close" id="help-close">Got it</button>' +
+      '</div>';
+    overlay.onclick = e => { if (e.target === overlay) toggleHelp(); };
+    document.getElementById('help-close').onclick = toggleHelp;
+  }
+
+  function renderOverview() {
+    return '<div class="overview">' +
+      '<h1>Account Prioritization &amp; Outbound Campaign</h1>' +
+      '<p>A go-to-market exercise for Valerie — scored five accounts, selected the best fit, mapped the buying committee, and built a full 14-day outbound sequence.</p>' +
+      '<div class="presenter-hint"><strong>Interactive deck.</strong> Click any section below, or use <kbd style="background:#F0EDE8;border-radius:4px;padding:2px 6px;font-size:12px;">←</kbd> <kbd style="background:#F0EDE8;border-radius:4px;padding:2px 6px;font-size:12px;">→</kbd> to move through. Press <kbd style="background:#F0EDE8;border-radius:4px;padding:2px 6px;font-size:12px;">?</kbd> for shortcuts.</div>' +
+      '<div class="section-cards">' +
+        sectionData.map(s =>
+          '<div class="section-card" data-section="' + s.id + '">' +
+            '<span class="section-card-num">' + esc(s.num) + '</span>' +
+            '<div class="section-card-body">' +
+              '<div class="section-card-title">' + esc(s.title) + '</div>' +
+              '<div class="section-card-desc">' + esc(s.exposition) + '</div>' +
+            '</div>' +
+            '<div class="section-card-tag">' + esc(s.tag) + '</div>' +
+            '<div class="section-card-arrow">→</div>' +
+          '</div>'
+        ).join('') +
+      '</div>' +
+      '<div class="walkthrough"><h3>Suggested 5-minute walkthrough</h3><ol>' +
+        walkthrough.map((w, i) =>
+          '<li data-section="' + w.section + '" style="cursor:pointer;"><strong>' + (i+1) + '.</strong> ' + w.text + ' <span style="color:#666;">→</span></li>'
+        ).join('') +
+      '</ol></div>' +
+    '</div>';
+  }
+
+  function renderMethodology() {
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">01</span><h2 class="section-title">Methodology</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">Five criteria, each weighted. Accounts scored independently, then ranked. Total = 100%. The highest-scoring fit drove the full buyer map and campaign.</p>' +
+      criteria.map(c =>
+        '<div class="criteria-row">' +
+          '<div class="criteria-weight">' + esc(c.weight) + '</div>' +
+          '<div class="criteria-bar-wrap"><div class="criteria-bar"><div class="criteria-bar-fill" style="width:' + c.barPct + ';"></div></div></div>' +
+          '<div class="criteria-divider"></div>' +
+          '<div class="criteria-name">' + esc(c.name) + '</div>' +
+          '<div class="criteria-desc">' + esc(c.desc) + '</div>' +
+        '</div>'
+      ).join('') +
+      '<div class="criteria-total-row">' +
+        '<div class="criteria-weight" style="font-size:22px;">100%</div>' +
+        '<div class="criteria-bar-wrap"><div class="criteria-bar"><div class="criteria-bar-fill" style="width:100%;"></div></div></div>' +
+        '<div class="criteria-divider"></div>' +
+        '<div style="padding:0 24px;font-size:15px;font-weight:700;color:#888;">Total weight · 5 criteria</div>' +
+      '</div>' +
+      '<div class="dark-callout"><strong>At scale:</strong> Clay · Apollo · LinkedIn Sales Nav · HubSpot/Outreach · Lavender · Gong · Airtable — for enrichment, sequencing, scoring, and iteration.</div>' +
+    '</div>';
+  }
+
+  function renderPrioritization() {
+    return '<div class="section-wrap section-wrap-tight">' +
+      '<div class="section-head"><span class="section-num">02</span><h2 class="section-title">Account Prioritization</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">5 accounts, scored against Valerie\'s ICP. 2 qualify, 1 is strategically complex, 2 are health systems — disqualified by definition.</p>' +
+      accounts.map(a =>
+        '<div class="account-card">' +
+          '<div class="account-top">' +
+            '<div class="account-rank">' + esc(a.rank) + '</div>' +
+            '<div class="account-info">' +
+              '<div class="account-name" style="color:' + a.nameColor + ';">' + esc(a.name) + '</div>' +
+              '<div class="account-reason">' + esc(a.reason) + '</div>' +
+            '</div>' +
+            '<div class="account-score" style="color:' + a.scoreColor + ';">' + a.total + '</div>' +
+            '<div class="account-tier" style="background:' + a.tierBg + ';color:' + a.tierColor + ';">' + esc(a.tier) + '</div>' +
+          '</div>' +
+          '<div class="account-bar-row">' +
+            '<div class="account-bar-track"><div class="account-bar-fill" style="background:' + a.barColor + ';width:' + a.barW + ';"></div></div>' +
+            '<div style="font-size:11px;color:#BBB;flex-shrink:0;">' + a.total + '/100</div>' +
+          '</div>' +
+        '</div>'
+      ).join('') +
+      '<div style="margin-top:28px;">' +
+        '<div class="tier-callout"><div class="tier-dot" style="background:#16A34A;"></div><div><div class="tier-callout-title">Tier 1 — Elevate ENT Partners &amp; Growth Orthopedics</div><div class="tier-callout-text">"You are scaling independent specialty practices. Valerie can help absorb admin volume without adding linear headcount."</div></div></div>' +
+        '<div class="tier-callout"><div class="tier-dot" style="background:#D97706;"></div><div><div class="tier-callout-title">Tier 2 — US Oncology Network</div><div class="tier-callout-text">"Position Valerie around specific workflow gaps rather than broad replacement of existing McKesson infrastructure."</div></div></div>' +
+        '<div class="tier-callout"><div class="tier-dot" style="background:#DC2626;"></div><div><div class="tier-callout-title" style="color:#AAA;">Disqualified — Sutter Health &amp; Baylor Scott &amp; White</div><div class="tier-callout-text" style="color:#AAA;font-style:normal;">Health systems — excluded by Valerie\'s ICP definition. Do not prioritize.</div></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderTarget() {
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">03</span><h2 class="section-title">Why Elevate ENT Wins</h2></div>' +
+      '<p class="section-lead" style="max-width:600px;">One MSO, one centralized back office, one buying committee. Three structural reasons it scores 95 out of 100 — and a live acquisition trigger that makes timing right now.</p>' +
+      '<div class="target-grid">' +
+        '<div class="target-card"><div class="target-card-num">01</div><div class="target-card-title">One account, not a federation</div><div class="target-card-text">A single MSO with a centralized back office — one buying committee, one clear owner for every Valerie product.</div></div>' +
+        '<div class="target-card"><div class="target-card-num">02</div><div class="target-card-title">Specialty pain = Valerie\'s products</div><div class="target-card-text">PCP referrals, faxed prior auths, high inbound call volume — fax, referral, and call-center automation with no stretch.</div></div>' +
+        '<div class="target-card"><div class="target-card-num">03</div><div class="target-card-title">A live acquisition trigger</div><div class="target-card-text">Actively expanding into LA and TN. Each deal brings integration chaos — and a VP of Integration &amp; Transformation exists to solve it.</div></div>' +
+      '</div>' +
+      '<div class="stats-bar">' +
+        '<div class="stats-item"><div class="stats-value">110</div><div class="stats-label">ENT locations</div></div>' +
+        '<div class="stats-divider"></div>' +
+        '<div class="stats-item stats-item-wide"><div class="stats-value">FL · TX · LA · TN</div><div class="stats-label">Active expansion states</div></div>' +
+        '<div class="stats-divider"></div>' +
+        '<div class="stats-item"><div class="stats-value">95/100</div><div class="stats-label">ICP fit score</div></div>' +
+        '<div class="stats-divider"></div>' +
+        '<div class="stats-item"><div class="stats-value">#1</div><div class="stats-label">Target account</div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderBuyers() {
+    const sp = state.scoringPhase;
+    const isIdle = sp === 'idle';
+    const isScoring = sp === 'running';
+    const isDone = sp === 'done';
+    const csIdx = state.currentScoringIdx;
+    const scoreBtnLabel = isIdle ? 'Run Score Analysis →' : (isScoring ? 'Analyzing…' : 'Re-run Analysis ↺');
+
+    let html = '<div class="section-wrap">' +
+      '<div class="section-head"><span class="section-num">04</span><h2 class="section-title">Buyer Map</h2></div>' +
+      '<div class="presenter-hint"><strong>Demo this live:</strong> Click <em>Run Score Analysis</em> to show the enrichment animation, then click <strong>Amy Verlsteffen</strong> to open her outreach profile.</div>' +
+      '<p class="section-lead" style="max-width:640px;margin-bottom:36px;">5 Director+ contacts at Elevate ENT. Run the AI score analysis to rank them by pain ownership, influence, and urgency — then click any contact to see their outreach profile.</p>' +
+      '<div style="margin-bottom:28px;">' +
+        '<button class="score-btn" id="score-btn"' + (isScoring ? ' disabled' : '') + '>' + esc(scoreBtnLabel) + '</button>';
+
+    if (isIdle) {
+      html += '<div class="tool-tags">' +
+        ['Clay','LinkedIn Sales Nav','Apollo','Web Scraping AI','Gong'].map(t => '<span class="tool-tag">' + t + '</span>').join('') +
+        '<span style="color:#BBB;font-size:12px;">will be used to compute each score</span></div>';
+    }
+    html += '</div><div class="buyer-grid">';
+
+    buyerData.forEach((b, i) => {
+      const lockedScore = state.buyerScores[i];
+      const isCurrent = csIdx === i && isScoring;
+      const cu = state.countUpValue;
+      const scored = lockedScore !== null && lockedScore !== undefined;
+      let scoreHtml = '';
+      if (scored) {
+        const bg = b.scoreBand === 'high' ? '#DCFCE7' : '#FEF9C3';
+        const col = b.scoreBand === 'high' ? '#16A34A' : '#D97706';
+        scoreHtml = '<div class="buyer-score" style="background:' + bg + ';color:' + col + ';">' + lockedScore + '</div>';
+      } else if (isCurrent && cu !== null) {
+        scoreHtml = '<div class="buyer-score" style="background:#E8E4DE;color:#888;">' + cu + '</div>';
+      } else if (isCurrent) {
+        scoreHtml = '<div class="scan-badge"><div class="scan-dot"></div><span class="scan-text">Scanning</span></div>';
+      }
+      const cardBg = isCurrent ? '#FAFAF8' : (state.activeBuyer === i ? '#F5F3EF' : '#FFF');
+      const cardBorder = isCurrent ? '2px solid #111' : (state.activeBuyer === i ? '2px solid #555' : '1px solid #E8E4DE');
+      const cursor = scored ? 'pointer' : 'default';
+      const priorityHtml = (scored || isDone) ? '<div class="buyer-priority">' + esc(b.priority) + '</div>' : '';
+      html += '<div class="buyer-card" data-buyer="' + i + '" style="background:' + cardBg + ';border:' + cardBorder + ';cursor:' + cursor + ';">' +
+        '<div class="buyer-avatar">' + esc(b.initials) + '</div>' + scoreHtml +
+        '<div class="buyer-name">' + esc(b.name) + '</div>' +
+        '<div class="buyer-title">' + esc(b.title) + '</div>' + priorityHtml + '</div>';
+    });
+    html += '</div>';
+
+    if (isScoring && csIdx >= 0) {
+      const name = buyerData[csIdx].name;
+      html += '<div class="scoring-panel">' +
+        '<div class="scoring-label">Scoring</div>' +
+        '<div class="scoring-name">' + esc(name) + '</div>' +
+        state.currentTools.map(t => {
+          const done = t.status === 'done';
+          return '<div class="tool-row">' +
+            '<span class="tool-icon" style="color:' + (done ? '#16A34A' : '#999') + ';">' + (done ? '✓' : '⟳') + '</span>' +
+            '<span class="tool-name" style="color:' + (done ? '#111' : '#888') + ';">' + esc(t.name) + '</span>' +
+            '<span class="tool-detail">' + esc(t.detail) + '</span></div>';
+        }).join('');
+      if (state.countUpValue !== null) {
+        html += '<div class="countup-row">' +
+          '<span class="countup-num">' + state.countUpValue + '</span>' +
+          '<span class="countup-denom">/100</span>' +
+          '<span class="countup-label">ICP fit score</span></div>';
+      }
+      html += '</div>';
+    }
+
+    if (state.activeBuyer !== null) {
+      const b = buyerData[state.activeBuyer];
+      const score = finalScores[state.activeBuyer];
+      const scoreBg = b.scoreBand === 'high' ? '#DCFCE7' : '#FEF9C3';
+      const scoreCol = b.scoreBand === 'high' ? '#16A34A' : '#D97706';
+      html += '<div class="detail-panel">' +
+        '<div class="detail-header">' +
+          '<div class="detail-person">' +
+            '<div class="detail-avatar">' + esc(b.initials) + '</div>' +
+            '<div><div class="detail-name">' + esc(b.name) + '</div>' +
+            '<div class="detail-title">' + esc(b.title) + '</div>' +
+            '<div class="detail-score-badge" style="background:' + scoreBg + ';color:' + scoreCol + ';">Score ' + score + ' · ' + esc(b.priority) + '</div></div>' +
+          '</div>' +
+          '<button class="btn-pill-ghost" id="close-buyer">Close ×</button>' +
+        '</div>' +
+        '<div class="detail-grid">' +
+          ['Role','Trigger','Pain Angle','Hook'].map((label, li) => {
+            const keys = ['role','trigger','angle','hook'];
+            return '<div class="detail-cell"><div class="detail-cell-label">' + label + '</div><div class="detail-cell-text">' + esc(b[keys[li]]) + '</div></div>';
+          }).join('') +
+        '</div></div>';
+    }
+
+    html += '<div class="bench-note"><strong>Bench:</strong> Liz Rodriguez (President) — co-equal sponsor; use if Amerstein goes cold. Kelly Raible (CMO) — right owner if the patient-conversion angle leads.</div></div>';
+    return html;
+  }
+
+  function renderCampaign() {
+    const activeDayIndex = state.activeCampaignDay;
+    const activeDay = activeDayIndex !== null ? dayData[activeDayIndex] : null;
+    const activeMsgIdx = state.activeCampaignMsg ?? 0;
+    const activeMsg = activeDay ? (activeDay.messages[activeMsgIdx] ?? activeDay.messages[0]) : null;
+
+    let html = '<div class="section-wrap">' +
+      '<div class="section-head"><span class="section-num">05</span><h2 class="section-title">14-Day Campaign</h2></div>' +
+      '<div class="presenter-hint"><strong>Demo this live:</strong> Click <strong>Day 1</strong> → switch between Formal (A) and Pattern Interrupt (B) → hit <em>Copy</em> to show ready-to-send outreach.</div>' +
+      '<p class="section-lead" style="max-width:680px;margin-bottom:40px;">7 touchpoints, 2 message styles A/B tested. Hypothesis: <em style="color:#333;">as Elevate adds ENT practices, patient demand leaks before it becomes a booked appointment.</em> Click any day node to read the full message.</p>' +
+      '<div class="timeline-wrap"><div class="timeline-line"></div><div class="timeline-nodes">' +
+      dayData.map((d, i) => {
+        const active = activeDayIndex === i;
+        return '<div class="day-node" data-day="' + i + '">' +
+          '<div class="day-circle" style="background:' + (active ? '#111' : '#FFF') + ';border:2px solid ' + (active ? '#111' : '#E4E0DA') + ';color:' + (active ? '#FFF' : '#111') + ';">' + d.day + '</div>' +
+          '<div class="day-label">' + esc(d.label) + '</div>' +
+          '<div class="day-channel">' + esc(d.channelLabel) + '</div>' +
+          '<div class="day-summary">' + esc(d.summary) + '</div></div>';
+      }).join('') +
+      '</div></div>';
+
+    if (activeDay) {
+      html += '<div class="campaign-panel">' +
+        '<div class="campaign-panel-header">' +
+          '<div class="campaign-panel-title">' + esc(activeDay.label) + ' — ' + esc(activeDay.summary) + '</div>' +
+          '<button class="btn-pill-ghost" id="close-campaign">Close ×</button>' +
+        '</div>' +
+        '<div class="msg-tabs">' +
+          activeDay.messages.map((m, i) =>
+            '<button class="msg-tab" data-msg="' + i + '" style="background:' + (activeMsgIdx === i ? '#111' : '#F0EDE8') + ';color:' + (activeMsgIdx === i ? '#FFF' : '#666') + ';">' + esc(m.label) + '</button>'
+          ).join('') +
+        '</div>';
+      if (activeMsg && activeMsg.subject) {
+        html += '<div class="msg-subject"><span class="msg-subject-label">Subject</span><span class="msg-subject-text">' + esc(activeMsg.subject) + '</span></div>';
+      }
+      html += '<div class="msg-body-wrap">' +
+        '<button class="copy-btn" id="copy-msg">Copy</button>' +
+        '<div class="msg-body" id="msg-body">' + esc(activeMsg ? activeMsg.body : '') + '</div></div></div>';
+    }
+
+    html += '<div class="ab-note"><div class="ab-badge">A/B TEST</div><div style="font-size:14px;color:#555;line-height:1.65;"><strong style="color:#111;font-weight:700;">Formal vs. Pattern Interrupt:</strong> Version A reads as more credible to senior healthcare buyers. Version B is more likely to earn opens and replies. The constant across both: patient demand is leaking before it becomes a booked appointment.</div></div></div>';
+    return html;
+  }
+
+  function renderMetrics() {
+    const tests = [
+      { label:'Subject Line', a:'"quick thought on Elevate\'s new-site intake"', b:'"I was asked to reach out to you"', hint:'→ Which earns the open' },
+      { label:'Call to Action', a:'"Worth 15 minutes this week?"', b:'"Give me 15 minutes and I\'ll show you the math"', hint:'→ Which earns the reply' },
+      { label:'Pain Framing', a:'"referral intake and scheduling delays"', b:'"patients slipping out before anyone calls them back"', hint:'→ Which language resonates' },
+      { label:'Persona Angle', a:'"standardizing front-office workflows"', b:'"where growth starts straining the desk"', hint:'→ Which problem feels urgent' },
+    ];
+    const funnel = [
+      { n:1, name:'Targeting', sub:'% of contacts matching Director+ ICP', q:'Did I pick the right buyers?' },
+      { n:2, name:'Attention', sub:'Email open rate + LinkedIn accept rate', q:'Are subject lines earning opens?' },
+      { n:3, name:'Relevance', sub:'Reply rate + positive reply rate', q:'Is the pain hypothesis resonating?' },
+      { n:4, name:'Conversion', sub:'Meetings booked', q:'Did the campaign create pipeline?' },
+      { n:5, name:'Learning', sub:'Objection themes + persona response rate', q:'How should the next sequence change?' },
+    ];
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">06</span><h2 class="section-title">Testing &amp; Metrics</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">4 message variables A/B tested across two styles. 5 funnel metrics — from targeting quality to pipeline created — tell me what\'s working and what to adjust next.</p>' +
+      '<div style="font-size:15px;font-weight:700;color:#111;margin-bottom:14px;">Message A/B tests</div>' +
+      '<div class="metrics-grid">' +
+        tests.map(t =>
+          '<div class="metric-card"><div class="metric-card-label">' + esc(t.label) + '</div>' +
+            '<div class="metric-variant"><span class="variant-a">A</span><span style="font-size:14px;color:#333;font-style:italic;">' + esc(t.a) + '</span></div>' +
+            '<div class="metric-variant"><span class="variant-b">B</span><span style="font-size:14px;color:#333;font-style:italic;">' + esc(t.b) + '</span></div>' +
+            '<div class="metric-hint">' + esc(t.hint) + '</div></div>'
+        ).join('') +
+      '</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#111;margin-bottom:14px;">Funnel metrics</div>' +
+      funnel.map(f =>
+        '<div class="funnel-row"><div class="funnel-num">' + f.n + '</div><div class="funnel-body"><span class="funnel-name">' + esc(f.name) + '</span><span class="funnel-sub">' + esc(f.sub) + '</span></div><div class="funnel-q">' + esc(f.q) + '</div></div>'
+      ).join('') +
+    '</div>';
+  }
+
+  function renderTools() {
+    const tools = [
+      { name:'Clay', desc:'Build + enrich contact list with titles, LinkedIn, emails, phones, and triggers' },
+      { name:'LinkedIn Sales Navigator', desc:'Find Director+ buyers in Ops, Patient Access, Revenue Cycle, Finance, Integration' },
+      { name:'Apollo / Outreach / HubSpot', desc:'Run the 14-day multichannel sequence and track every touch' },
+      { name:'ChatGPT / Claude / Lavender', desc:'Generate persona variants, objection handling, and call openers' },
+      { name:'Gong / Chorus', desc:'Review call recordings, objections, and winning talk tracks' },
+      { name:'Airtable / Zapier / Make', desc:'Campaign dashboard and automated handoffs between tools' },
+    ];
+    const questions = [
+      'Does Valerie usually land first through call center, referral automation, or fax automation?',
+      'Which persona is usually the strongest champion — Ops, Patient Access, CFO, or CEO?',
+      'What case-study metric resonates most with specialty MSOs?',
+      'Which EMR / integration constraints most affect implementation at newly acquired practices?',
+    ];
+    return '<div class="section-wrap section-wrap-narrow">' +
+      '<div class="section-head"><span class="section-num">07</span><h2 class="section-title">Tools &amp; Open Questions</h2></div>' +
+      '<p class="section-lead" style="max-width:620px;">The full stack I\'d deploy at scale, and 4 questions that would sharpen the next campaign before it launches.</p>' +
+      '<div class="tools-grid"><div><div class="tools-col-title">Tools at scale</div>' +
+        tools.map(t => '<div class="tool-item"><div class="tool-item-name">' + esc(t.name) + '</div><div class="tool-item-desc">' + esc(t.desc) + '</div></div>').join('') +
+      '</div><div><div class="tools-col-title">Open questions for Valerie</div>' +
+        questions.map((q, i) => '<div class="question-card"><div class="question-num">0' + (i+1) + '</div><div class="question-text">' + esc(q) + '</div></div>').join('') +
+      '</div></div></div>';
+  }
+
+  function bindEvents() {
+    document.querySelectorAll('[data-section]').forEach(el => {
+      el.onclick = () => goToSection(el.getAttribute('data-section'));
+    });
+    document.querySelectorAll('.walkthrough li[data-section]').forEach(el => {
+      el.onclick = () => goToSection(el.getAttribute('data-section'));
+    });
+    const scoreBtn = document.getElementById('score-btn');
+    if (scoreBtn) scoreBtn.onclick = () => { if (state.scoringPhase !== 'running') startScoring(); };
+    document.querySelectorAll('[data-buyer]').forEach(el => {
+      const i = parseInt(el.getAttribute('data-buyer'), 10);
+      el.onclick = () => {
+        if (state.buyerScores[i] !== null && state.buyerScores[i] !== undefined) {
+          setState({ activeBuyer: state.activeBuyer === i ? null : i });
+        }
+      };
+    });
+    const closeBuyer = document.getElementById('close-buyer');
+    if (closeBuyer) closeBuyer.onclick = () => setState({ activeBuyer:null });
+    document.querySelectorAll('[data-day]').forEach(el => {
+      const i = parseInt(el.getAttribute('data-day'), 10);
+      el.onclick = () => setState({
+        activeCampaignDay: state.activeCampaignDay === i ? null : i,
+        activeCampaignMsg: 0
+      });
+    });
+    const closeCampaign = document.getElementById('close-campaign');
+    if (closeCampaign) closeCampaign.onclick = () => setState({ activeCampaignDay:null });
+    document.querySelectorAll('[data-msg]').forEach(el => {
+      el.onclick = () => setState({ activeCampaignMsg: parseInt(el.getAttribute('data-msg'), 10) });
+    });
+    const copyBtn = document.getElementById('copy-msg');
+    if (copyBtn && state.activeCampaignDay !== null) {
+      const day = dayData[state.activeCampaignDay];
+      const msg = day.messages[state.activeCampaignMsg ?? 0] ?? day.messages[0];
+      copyBtn.onclick = () => copyMessage(msg.subject, msg.body, copyBtn);
+    }
+  }
+
+  function render() {
+    renderHeader();
+    const main = document.getElementById('main');
+    let content = '';
+    switch (state.view) {
+      case 'overview': content = renderOverview(); break;
+      case 'methodology': content = renderMethodology(); break;
+      case 'prioritization': content = renderPrioritization(); break;
+      case 'target': content = renderTarget(); break;
+      case 'buyers': content = renderBuyers(); break;
+      case 'campaign': content = renderCampaign(); break;
+      case 'metrics': content = renderMetrics(); break;
+      case 'tools': content = renderTools(); break;
+      default: content = renderOverview();
+    }
+    main.innerHTML = '<div class="main-enter">' + content + '</div>';
+    bindEvents();
+    renderHelp();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'Escape') {
+      if (state.showHelp) toggleHelp();
+      else goBack();
+      e.preventDefault();
+    }
+    else if (e.key === 'ArrowLeft') { goPrev(); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { goNext(); e.preventDefault(); }
+    else if (e.key === '?' && !e.shiftKey) { toggleHelp(); e.preventDefault(); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
